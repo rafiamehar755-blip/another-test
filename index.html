@@ -269,27 +269,19 @@ let sectionCount = 0;
 let itemCount = 0;
 let cachedRecentQuotes = [];
 
-const IDB_DB_NAME = 'AhmadAluDirectoryDB';
-const IDB_STORE_NAME = 'handles';
-const IDB_KEY_NAME = 'savedFolder';
+// Tracks the next available sequence number retrieved from your Google Sheets database
+let calculatedNextNum = localStorage.getItem('nextQuotNum') || 215;
 
-// Safely load the next available sequence number with a try/catch block
-let calculatedNextNum = 215;
-try {
-  calculatedNextNum = parseInt(localStorage.getItem('nextQuotNum')) || 215;
-} catch (e) {
-  console.warn("Storage reading blocked:", e);
-}
-
-// Scans database history to compute the correct next reference number safely
+// Automatically scans database history to determine the next available reference number
 function determineNextReferenceNumber(quotes) {
-  if (!quotes || !Array.isArray(quotes) || quotes.length === 0) return;
+  if (!quotes || quotes.length === 0) return;
   
-  let maxNum = 214; // Baseline default (215 - 1)
+  let maxNum = 214; // Default baseline (215 - 1)
   
   quotes.forEach(q => {
     if (q.ref) {
-      const numMatch = String(q.ref).match(/\d+$/);
+      // Extract ending numbers from the reference (e.g., '215' from 'AA-2026-215')
+      const numMatch = q.ref.match(/\d+$/);
       if (numMatch) {
         const num = parseInt(numMatch[0]);
         if (num > maxNum) {
@@ -300,35 +292,45 @@ function determineNextReferenceNumber(quotes) {
   });
 
   calculatedNextNum = maxNum + 1;
-  try {
-    localStorage.setItem('nextQuotNum', calculatedNextNum);
-  } catch(e) {
-    console.warn("Storage writing blocked:", e);
-  }
+  localStorage.setItem('nextQuotNum', calculatedNextNum);
 
-  // Set the current input field if working on a fresh draft
+  // Auto-set the input field if the user is working on a fresh draft
   const quotRefEl = document.getElementById('quotRef');
   if (quotRefEl) {
     const currentVal = quotRefEl.value;
     const currentNumMatch = currentVal.match(/\d+$/);
+    // If the input is empty or has an older number, auto-update it to the fresh one
     if (!currentVal || (currentNumMatch && parseInt(currentNumMatch[0]) <= calculatedNextNum)) {
       quotRefEl.value = "AA-" + currentYear + "-" + calculatedNextNum;
     }
   }
 }
 
-// Cleans slate and configures the input for a new quotation draft utilizing your original clearDraft logic
+// Handles the creation of a brand-new quotation
 function startNewQuotation() {
-  // Execute your original clearDraft prompt and initialization cleanly
-  clearDraft();
-  
-  // Update the reference input box to the correct calculated next number from sheets
-  const quotRefEl = document.getElementById('quotRef');
-  if (quotRefEl) {
-    quotRefEl.value = "AA-" + currentYear + "-" + calculatedNextNum;
+  if (confirm("Start a new quotation? This will clear current unsaved inputs.")) {
+    document.getElementById('clientAddr').value = '';
+    document.getElementById('clientPhone').value = '';
+    document.getElementById('clientEmail').value = '';
+    document.getElementById('subject').value = '';
+    document.getElementById('discountAED').value = '0';
+    document.getElementById('sectionsContainer').innerHTML = '';
+    
+    // Load the calculated next number
+    const quotRefEl = document.getElementById('quotRef');
+    if (quotRefEl) {
+      quotRefEl.value = "AA-" + currentYear + "-" + calculatedNextNum;
+    }
+
+    const sId = addSection("Section 1");
+    addItemToSection(sId);
+    generateQuotation();
   }
-  generateQuotation();
 }
+
+const IDB_DB_NAME = 'AhmadAluDirectoryDB';
+const IDB_STORE_NAME = 'handles';
+const IDB_KEY_NAME = 'savedFolder';
 
 function getIDB() {
   return new Promise((resolve, reject) => {
@@ -448,6 +450,9 @@ function fetchRecentQuotes() {
   .then(quotes => {
     cachedRecentQuotes = quotes;
     renderRecentQuotes(quotes);
+    
+    // RUN THE AUTOMATIC REFERENCE SCAN
+    determineNextReferenceNumber(quotes);
   })
   .catch(err => {
     console.error(err);
@@ -493,9 +498,6 @@ function renderRecentQuotes(quotes) {
     div.onclick = () => loadQuoteFromDirectory(q);
     listEl.appendChild(div);
   });
-
-  // Safe Reference Number Calculation Hook
-  determineNextReferenceNumber(quotes);
 }
 
 function filterRecentQuotes() {
@@ -1213,6 +1215,7 @@ function generateQuotation() {
         </div>
         <div>
           <div class="section-label">Document Info</div>
+          <!-- Ref / Quotation number highlighted in bold red -->
           <div><strong>Reference No:</strong> <span style="color: #991b1b; font-weight: bold;">${ref}</span></div>
           <div><strong>Date:</strong> ${date}</div>
           <div><strong>EMAIL:</strong> info@ahmadaluminium.ae</div>
@@ -1245,6 +1248,7 @@ function generateQuotation() {
     </div>
   </div>`;
 
+  // REMOVED THE "Page 2 Below" text and replaced with a clean divider line on the screen
   const pageBreak = `<div class="page-break-divider" style="height: 1px; border-bottom: 1px dashed #cbd5e1; margin: 24px 0;"></div>`;
 
   const page2 = `
@@ -1398,11 +1402,7 @@ function incrementReferenceNumber() {
   const numPart = refVal.match(/\d+$/);
   if (numPart) {
     const usedNum = parseInt(numPart[0]);
-    try {
-      localStorage.setItem('nextQuotNum', usedNum + 1);
-    } catch(e) {
-      console.warn("Storage writing blocked:", e);
-    }
+    localStorage.setItem('nextQuotNum', usedNum + 1);
     document.getElementById('quotRef').value = "AA-" + currentYear + "-" + (usedNum + 1);
   }
 }
@@ -1468,6 +1468,7 @@ async function shareToWhatsApp() {
   };
 
   try {
+    // Force browser to wait until signatures and company logo are fully loaded
     const images = element.querySelectorAll('img');
     const imageLoadPromises = Array.from(images).map(img => {
       if (img.complete) return Promise.resolve();
@@ -1506,91 +1507,8 @@ async function shareToWhatsApp() {
   }
 }
 
-// Your original constants declared cleanly at the top of their context
-const IDB_DB_NAME = 'AhmadAluDirectoryDB';
-const IDB_STORE_NAME = 'handles';
-const IDB_KEY_NAME = 'savedFolder';
-
-// Safely stores the last calculated next reference number in local storage memory
-let calculatedNextNum = 215;
-try {
-  calculatedNextNum = parseInt(localStorage.getItem('nextQuotNum')) || 215;
-} catch (e) {
-  console.warn("Storage reading blocked:", e);
-}
-
-// Scans database history to compute the correct next reference number safely
-function determineNextReferenceNumber(quotes) {
-  if (!quotes || !Array.isArray(quotes) || quotes.length === 0) return;
-  
-  let maxNum = 214; // Baseline default (215 - 1)
-  
-  quotes.forEach(q => {
-    if (q.ref) {
-      const numMatch = String(q.ref).match(/\d+$/);
-      if (numMatch) {
-        const num = parseInt(numMatch[0]);
-        if (num > maxNum) {
-          maxNum = num;
-        }
-      }
-    }
-  });
-
-  calculatedNextNum = maxNum + 1;
-  try {
-    localStorage.setItem('nextQuotNum', calculatedNextNum);
-  } catch(e) {
-    console.warn("Storage writing blocked:", e);
-  }
-
-  // Set the current input field if working on a fresh draft
-  const quotRefEl = document.getElementById('quotRef');
-  if (quotRefEl) {
-    const currentVal = quotRefEl.value;
-    const currentNumMatch = currentVal.match(/\d+$/);
-    if (!currentVal || (currentNumMatch && parseInt(currentNumMatch[0]) <= calculatedNextNum)) {
-      quotRefEl.value = "AA-" + currentYear + "-" + calculatedNextNum;
-    }
-  }
-}
-
-// Cleans slate and configures the input for a new quotation draft utilizing your original clearDraft logic
-function startNewQuotation() {
-  // Execute your original clearDraft prompt and initialization cleanly
-  clearDraft();
-  
-  // Update the reference input box to the correct calculated next number from sheets
-  const quotRefEl = document.getElementById('quotRef');
-  if (quotRefEl) {
-    quotRefEl.value = "AA-" + currentYear + "-" + calculatedNextNum;
-  }
-  generateQuotation();
-}
-
-// Your exact original clearDraft function untouched
-function clearDraft() {
-  if (confirm("Reset current draft?")) {
-    document.getElementById('clientAddr').value = '';
-    document.getElementById('clientPhone').value = '';
-    document.getElementById('clientEmail').value = '';
-    document.getElementById('subject').value = '';
-    document.getElementById('discountAED').value = '0';
-    document.getElementById('sectionsContainer').innerHTML = '';
-    const sId = addSection("Section 1");
-    addItemToSection(sId);
-    generateQuotation();
-  }
-}
-
-// Your exact original window.onload function untouched
 window.onload = () => {
-  let currentSavedRef = 215;
-  try {
-    currentSavedRef = parseInt(localStorage.getItem('nextQuotNum')) || 215;
-  } catch (e) {
-    console.warn("Storage reading blocked:", e);
-  }
+  let currentSavedRef = localStorage.getItem('nextQuotNum') || 215;
   const quotRefEl = document.getElementById('quotRef');
   if (quotRefEl) {
     quotRefEl.value = "AA-" + currentYear + "-" + currentSavedRef;
@@ -1609,16 +1527,6 @@ window.onload = () => {
   const initialSecId = addSection("Section 1");
   addItemToSection(initialSecId);
 };
-
-// Independent browser listener that safely hides desktop directory pickers on mobile/iOS
-window.addEventListener('load', () => {
-  if (!window.showDirectoryPicker) {
-    const folderHeader = document.querySelector('.folder-setup-header');
-    if (folderHeader) {
-      folderHeader.style.display = 'none';
-    }
-  }
-});
 </script>
 
 <!-- Register the service worker for the Progressive Web App -->
