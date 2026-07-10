@@ -1,0 +1,1560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ahmad Aluminium & Glass - Quotation System</title>
+<!-- html2pdf.js CDN library for programmatic high-fidelity PDF exports -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<!-- Link the manifest and set the brand theme color -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#991b1b">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: #f8fafc; }
+  ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+  ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background: #f8fafc; color: #334155; min-height: 100vh; -webkit-font-smoothing: antialiased; }
+  .app-header { background: #ffffff; padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #e2e8f0; flex-wrap: wrap; gap: 16px; }
+  .header-left { display: flex; align-items: center; gap: 14px; }
+  .logo-box { background: #fff5f5; border: 1px solid #fee2e2; border-radius: 8px; padding: 8px; display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; }
+  .brand-info h1 { font-size: 16px; color: #0f172a; font-weight: 700; margin-bottom: 2px; }
+  .brand-info span { font-size: 11px; color: #64748b; font-weight: 500; }
+  .header-right { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+  .folder-setup-header { display: flex; flex-direction: column; align-items: flex-end; gap: 3px; }
+  .btn-folder-header { background: #991b1b; color: white; border: none; padding: 6px 12px; border-radius: 6px; font-size: 11px; cursor: pointer; font-weight: 700; transition: background 0.15s; }
+  .btn-folder-header:hover { background: #7f1d1d; }
+  #folderStatus { font-size: 10px; color: #64748b; font-weight: 500; }
+  .sync-badge { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 9999px; padding: 6px 14px; display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; color: #166534; }
+  .sync-dot { width: 8px; height: 8px; background: #22c55e; border-radius: 50%; display: inline-block; animation: pulse 2s infinite; }
+  @keyframes pulse { 0% { transform: scale(0.9); opacity: 1; } 50% { transform: scale(1.15); opacity: 0.7; } 100% { transform: scale(0.9); opacity: 1; } }
+  .container { display: grid; grid-template-columns: 420px 1fr; gap: 0; height: calc(100vh - 73px); }
+  .mobile-tabs { display: none; background: #ffffff; border-bottom: 1px solid #e2e8f0; position: sticky; top: 0; z-index: 100; width: 100%; }
+  .mobile-tab-btn { flex: 1; background: none; border: none; padding: 14px; font-size: 13px; font-weight: 700; color: #64748b; cursor: pointer; text-align: center; transition: all 0.15s; border-bottom: 2px solid transparent; }
+  .mobile-tab-btn.active { color: #991b1b; border-bottom-color: #991b1b; background: #fffdfd; }
+  .form-panel { background: #ffffff; padding: 24px; overflow-y: auto; border-right: 1px solid #e2e8f0; }
+  .form-panel h2 { color: #991b1b; font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 2px solid #f1f5f9; font-weight: 700; }
+  .form-group { margin-bottom: 16px; }
+  .form-group label { display: block; font-size: 10px; color: #475569; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+  .form-group input, .form-group select, .form-group textarea { width: 100%; background: #ffffff; border: 1px solid #cbd5e1; color: #1e293b; padding: 8px 12px; border-radius: 6px; font-size: 13px; transition: border-color 0.15s ease, box-shadow 0.15s ease; }
+  .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: #991b1b; box-shadow: 0 0 0 3px rgba(153, 27, 27, 0.08); }
+  .recent-quotes-card { background: #f8fafc; padding: 14px; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 24px; }
+  .sections-container { margin-top: 10px; }
+  .section-block { background: #fdfdfd; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; margin-bottom: 20px; border-left: 4px solid #991b1b; }
+  .section-header-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px dashed #e2e8f0; }
+  .section-title-input { flex: 1; font-weight: 700; font-size: 13px; color: #991b1b; border: 1px solid #cbd5e1 !important; border-radius: 6px; padding: 6px 10px !important; background: #ffffff; }
+  .btn-delete-section { background: #fee2e2; color: #ef4444; border: none; padding: 6px 10px; border-radius: 6px; cursor: pointer; font-size: 11px; font-weight: bold; transition: background 0.15s; }
+  .btn-delete-section:hover { background: #ef4444; color: #ffffff; }
+  .item-row { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; margin-bottom: 16px; position: relative; box-shadow: 0 1px 3px rgba(0,0,0,0.02); }
+  .item-row h4 { color: #991b1b; font-size: 11px; margin-bottom: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+  .item-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
+  .item-grid .full { grid-column: 1/-1; }
+  .item-grid input, .item-grid select, .item-grid textarea { width: 100%; background: #ffffff; border: 1px solid #cbd5e1; color: #1e293b; padding: 8px 10px; border-radius: 6px; font-size: 12.5px; }
+  .sizes-container { background: #f8fafc; padding: 12px; border-radius: 6px; margin-top: 6px; border: 1px solid #e2e8f0; }
+  .sizes-title { font-size: 10px; color: #475569; text-transform: uppercase; margin-bottom: 8px; font-weight: 700; }
+  .size-row { display: grid; grid-template-columns: 20px 1fr 15px 1fr 25px 1fr; align-items: center; gap: 4px; margin-bottom: 6px; font-size: 11px; color: #475569; }
+  .size-row input { text-align: center; padding: 6px 2px !important; border-radius: 4px; border: 1px solid #cbd5e1; }
+  .calc-result { background: #f0fdf4; padding: 10px 12px; border-radius: 6px; font-size: 12.5px; color: #166534; margin-top: 10px; line-height: 1.4; border: 1px solid #bbf7d0; font-weight: 700; }
+  .btn-add { width: 100%; background: #ffffff; border: 1px dashed #cbd5e1; color: #475569; padding: 10px; border-radius: 6px; cursor: pointer; font-size: 12.5px; margin-top: 5px; font-weight: 600; transition: all 0.15s; }
+  .btn-add:hover { background: #f8fafc; border-color: #94a3b8; }
+  .btn-glass-room { width: 100%; background: #0f766e; color: white; border: none; padding: 10px; border-radius: 6px; cursor: pointer; font-size: 12px; margin-top: 8px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+  .btn-glass-room:hover { background: #0d9488; }
+  .btn-remove { position: absolute; top: 12px; right: 12px; background: #fee2e2; color: #ef4444; border: none; border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 11px; font-weight: 600; }
+  .btn-remove:hover { background: #ef4444; color: #ffffff; }
+  .btn-generate { width: 100%; background: #991b1b; color: white; border: none; padding: 14px; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 700; margin-top: 20px; transition: background 0.15s; box-shadow: 0 4px 6px -1px rgba(153, 27, 27, 0.1); }
+  .btn-generate:hover { background: #7f1d1d; }
+  .preview-panel { background: #f1f5f9; overflow-y: auto; overflow-x: auto; display: flex; flex-direction: column; align-items: center; padding: 24px; border-left: 1px solid #e2e8f0; }
+  .preview-toolbar { width: 100%; max-width: 210mm; display: flex; gap: 12px; margin-bottom: 20px; justify-content: flex-end; }
+  .btn-pdf { background: #991b1b; color: white; border: none; padding: 10px 18px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 700; }
+  .btn-pdf:hover { background: #7f1d1d; }
+  .btn-whatsapp { background: #16a34a; color: white; border: none; padding: 10px 18px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 6px; }
+  .btn-whatsapp:hover { background: #15803d; }
+  .btn-print { background: #1e293b; color: white; border: none; padding: 10px 18px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; }
+  .quotation-page { background: white; width: 210mm; min-height: 297mm; height: auto; padding: 20mm; box-shadow: 0 4px 20px rgba(0,0,0,0.06); font-family: Arial, sans-serif; color: #1e293b; position: relative; margin-bottom: 24px; box-sizing: border-box; }
+  .quotation-page-footer { background: white; width: 210mm; min-height: 285mm; height: auto; padding: 15mm 20mm; box-shadow: 0 4px 20px rgba(0,0,0,0.06); font-family: Arial, sans-serif; color: #1e293b; position: relative; margin-bottom: 24px; box-sizing: border-box; page-break-before: always !important; break-before: page !important; page-break-inside: avoid !important; break-inside: avoid !important; page-break-after: avoid !important; break-after: avoid !important; }
+  table { width: 100%; border-collapse: collapse; font-size: 11.5px; margin-bottom: 16px; position: relative; z-index: 1; table-layout: fixed; }
+  table th { background: #991b1b; color: white; padding: 10px 12px; text-align: left; text-transform: uppercase; font-size: 10px; letter-spacing: 0.5px; }
+  table th:last-child { text-align: right; }
+  table td { padding: 10px 12px; border: 1px solid #e2e8f0; vertical-align: top; color: #334155; }
+  table tr { page-break-inside: avoid !important; break-inside: avoid !important; }
+  table tr:nth-child(even) td { background: #fafafa; }
+  .total-row td { font-weight: bold; background: #fafafa !important; border-top: 2px solid #991b1b; color: #0f172a; }
+  .total-row td:last-child { color: #991b1b; font-size: 13px; text-align: right; }
+  .item-name { font-weight: bold; font-size: 12px; color: #0f172a; display: block; margin-bottom: 4px; }
+  .item-desc { font-size: 11px; color: #475569; line-height: 1.5; display: block; }
+  .amount-words { background: #fef2f2; border: 1px solid #fca5a5; padding: 12px 16px; font-size: 11px; margin-bottom: 20px; font-weight: bold; text-align: center; color: #991b1b; position: relative; z-index: 1; border-radius: 6px; }
+  .doc-section-title { color: #991b1b; font-weight: bold; font-size: 12px; margin: 16px 0 8px; position: relative; z-index: 1; text-transform: uppercase; letter-spacing: 0.5px; }
+  .doc-list { list-style: none; font-size: 11px; line-height: 1.8; position: relative; z-index: 1; color: #475569; }
+  .doc-list li::before { content: '✓ '; color: #991b1b; font-weight: bold; margin-right: 4px; }
+  .client-meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; margin-bottom: 20px; font-size: 12px; position: relative; z-index: 1; }
+  .section-label { font-size: 10px; text-transform: uppercase; color: #64748b; font-weight: bold; border-bottom: 1px solid #e2e8f0; padding-bottom: 6px; margin-bottom: 8px; letter-spacing: 0.5px; }
+  .bank-grid-vertical { display: flex; flex-direction: column; gap: 8px; position: relative; z-index: 1; margin-top: 10px; }
+  .bank-card { background: #fff5f5; border: 1px solid #fee2e2; padding: 12px 16px; font-size: 11px; line-height: 1.7; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid #991b1b; box-shadow: 0 1px 2px rgba(0,0,0,0.01); }
+  .bank-card strong { color: #991b1b; font-size: 11.5px; display: block; margin-bottom: 2px; font-weight: 700; }
+  .iban-pill { background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 6px 12px; display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: bold; color: #1e293b; cursor: pointer; transition: all 0.15s ease; box-shadow: 0 1px 2px rgba(0,0,0,0.02); }
+  .iban-pill:hover { border-color: #94a3b8; background: #f8fafc; }
+  .iban-pill svg { color: #64748b; flex-shrink: 0; }
+  .watermark-container { position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: flex; justify-content: center; align-items: center; pointer-events: none; z-index: 0; overflow: hidden; }
+  .watermark-text { font-family: Arial, sans-serif; font-size: 55px; font-weight: 900; color: rgba(153, 27, 27, 0.02); text-transform: uppercase; transform: rotate(-35deg); white-space: nowrap; letter-spacing: 5px; }
+  .recent-quote-item:hover { background: #f1f5f9 !important; }
+  @media (min-width: 993px) { .form-panel, .preview-panel { display: block !important; } }
+  @media (max-width: 992px) {
+    .app-header { padding: 12px 16px; flex-direction: column; align-items: flex-start; gap: 12px; }
+    .header-right { width: 100%; justify-content: space-between; border-top: 1px solid #f1f5f9; padding-top: 12px; }
+    .folder-setup-header { align-items: flex-start; }
+    .mobile-tabs { display: flex; }
+    .container { display: block !important; height: auto !important; }
+    .form-panel, .preview-panel { display: none !important; width: 100% !important; height: auto !important; overflow: visible !important; padding: 16px !important; }
+    .form-panel.active, .preview-panel.active { display: block !important; }
+    .preview-panel { overflow-x: auto !important; -webkit-overflow-scrolling: touch; background: #e2e8f0 !important; align-items: flex-start !important; padding: 12px !important; }
+    .preview-toolbar { max-width: 100% !important; position: sticky; left: 0; justify-content: center !important; gap: 8px !important; margin-bottom: 12px !important; }
+    .preview-toolbar button { padding: 8px 12px !important; font-size: 12px !important; flex: 1; }
+    .quotation-container { width: max-content !important; display: block !important; }
+    .quotation-page, .quotation-page-footer { margin-bottom: 12px !important; box-shadow: 0 2px 8px rgba(0,0,0,0.15) !important; border: 1px solid #cbd5e1 !important; }
+  }
+  @media print {
+    @page { size: A4; margin: 0 !important; }
+    body { background: white !important; margin: 0 !important; padding: 0 !important; }
+    .app-header, .form-panel, .preview-toolbar, .page-break-divider, .mobile-tabs { display: none !important; }
+    .container { display: block !important; width: 100% !important; }
+    .preview-panel { padding: 0 !important; margin: 0 !important; background: white !important; width: 100% !important; display: block !important; }
+    .quotation-page, .quotation-page-footer { transform: scale(1) !important; margin: 0 !important; box-shadow: none !important; border: none !important; width: 210mm !important; height: auto !important; min-height: 297mm !important; padding: 20mm !important; }
+    .quotation-page-footer { min-height: 280mm !important; padding: 15mm 20mm !important; }
+    .quotation-page { page-break-after: always !important; page-break-inside: auto !important; }
+    .quotation-page-footer { page-break-inside: avoid !important; break-inside: avoid !important; page-break-after: avoid !important; }
+  }
+</style>
+</head>
+<body>
+
+<datalist id="itemNamesDatalist"></datalist>
+
+<!-- Header Box -->
+<div class="app-header">
+  <div class="header-left">
+    <div class="logo-box">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#991b1b" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect>
+        <line x1="9" y1="22" x2="9" y2="16"></line>
+        <line x1="15" y1="22" x2="15" y2="16"></line>
+        <line x1="9" y1="16" x2="15" y2="16"></line>
+        <path d="M9 6h.01"></path>
+        <path d="M15 6h.01"></path>
+        <path d="M9 10h.01"></path>
+        <path d="M15 10h.01"></path>
+      </svg>
+    </div>
+    <div class="brand-info">
+      <h1>Ahmad Aluminium & Glass Contractor</h1>
+      <span>Dubai, UAE · Official Quotation & Project Engineering Studio</span>
+    </div>
+  </div>
+  
+  <div class="header-right">
+    <!-- Target Save Folder Setup -->
+    <div class="folder-setup-header">
+      <button onclick="selectAutoSaveFolder()" class="btn-folder-header">📂 Choose Local Save Folder</button>
+      <span id="folderStatus">Status: Default Downloads folder</span>
+    </div>
+
+    <!-- Database Sync Badge -->
+    <div class="sync-badge">
+      <span class="sync-dot"></span>
+      <span>Database Sync: <strong id="syncStatus">CONNECTED</strong></span>
+    </div>
+  </div>
+</div>
+
+<!-- Mobile Tab Navigation Selector -->
+<div class="mobile-tabs">
+  <button class="mobile-tab-btn active" onclick="switchMobileTab('form')">📝 Edit Details</button>
+  <button class="mobile-tab-btn" onclick="switchMobileTab('preview')">👁️ Live Preview</button>
+</div>
+
+<div class="container">
+  <div class="form-panel active" id="formPanel">
+    
+    <!-- History Directory Area -->
+    <div class="recent-quotes-card">
+      <label style="color: #334155; font-weight: bold; font-size: 10px; margin-bottom: 8px; display: block; letter-spacing: 1px;">🔍 Recent Quotations Directory</label>
+      <input type="text" id="searchQuotes" placeholder="Type to search..." oninput="filterRecentQuotes()" style="margin-bottom: 8px; font-size: 12px; background: #ffffff; border: 1px solid #cbd5e1; color: #1e293b; padding: 8px 10px;">
+      <div id="recentQuotesList" style="max-height: 120px; overflow-y: auto; background: #ffffff; border-radius: 6px; padding: 4px; font-size: 11px; color: #334155; border: 1px solid #e2e8f0;">
+        <div style="text-align: center; color: #94a3b8; padding: 10px;">Loading History...</div>
+      </div>
+      <button onclick="fetchRecentQuotes()" style="width: 100%; margin-top: 8px; background: #475569; color: white; border: none; padding: 8px; border-radius: 6px; font-size: 11px; cursor: pointer; font-weight: 600;">🔄 Refresh Directory</button>
+    </div>
+
+    <h2>📋 Quotation Details</h2>
+
+    <div class="form-group">
+      <label>⚙️ Work Type Category (Section 1 Only)</label>
+      <select id="workTypeSelector" onchange="onWorkTypeChange(this.value)">
+        <option value="Custom">Custom / Manual Input</option>
+      </select>
+    </div>
+
+    <div class="form-group" style="display: flex; gap: 10px;">
+      <div style="flex: 1;">
+        <label>Ref Number</label>
+        <input type="text" id="quotRef" placeholder="AA-2026-215">
+      </div>
+      <button onclick="clearDraft()" style="background: #fee2e2; color: #ef4444; border: none; padding: 9px 12px; border-radius: 6px; font-size: 11px; margin-top: 20px; font-weight: bold;">🧹 Reset</button>
+    </div>
+    
+    <div class="form-group"><label>Date</label><input type="date" id="quotDate"></div>
+    <div class="form-group"><label>Client Address</label><input type="text" id="clientAddr" placeholder="Al Sufouh, Dubai"></div>
+    <div class="form-group"><label>Client Phone</label><input type="text" id="clientPhone" placeholder="+971 58 849 0784"></div>
+    <div class="form-group"><label>Client Email</label><input type="text" id="clientEmail" placeholder="NA"></div>
+    <div class="form-group"><label>Subject</label><input type="text" id="subject" placeholder="Glass Room Work"></div>
+
+    <div class="form-group">
+      <label>Tax Settings</label>
+      <select id="vatToggle" onchange="generateQuotation();">
+        <option value="no">No VAT</option>
+        <option value="yes">Add 5% UAE VAT</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>🏷️ Discount (AED)</label>
+      <input type="number" id="discountAED" placeholder="e.g. 500" value="0" oninput="generateQuotation();">
+    </div>
+
+    <div class="form-group" style="background: #f0fdfa; padding: 14px; border-radius: 8px; border: 1px solid #ccfbf1;">
+      <label style="color: #0f766e; font-weight: bold; font-size: 10px; letter-spacing: 1px;">📐 Room Dimensions - Section 1 Only (cm)</label>
+      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 4px;">
+        <input type="number" id="globalWidth" placeholder="W" style="border: 1px solid #99f6e4;">
+        <input type="number" id="globalLength" placeholder="L" style="border: 1px solid #99f6e4;">
+        <input type="number" id="globalHeight" placeholder="H" style="border: 1px solid #99f6e4;">
+      </div>
+      <button class="btn-glass-room" onclick="applySmartEstimator()">⚡ Apply Formulas</button>
+    </div>
+
+    <h2 style="margin-top:20px; display: flex; justify-content: space-between; align-items: center;">
+      <span>🔧 Multi-Section Workspace</span>
+    </h2>
+    
+    <!-- Container for dynamic sections -->
+    <div class="sections-container" id="sectionsContainer"></div>
+    
+    <button onclick="addSection()" style="width: 100%; margin-top: 10px; background: #1e293b; color: white; border: none; padding: 12px; border-radius: 6px; font-weight: 700; cursor: pointer; font-size: 13px;">📁 Add New Section</button>
+
+    <button class="btn-generate" onclick="generateQuotation(); triggerSilentCloudSave();">⚡ Generate & View Document</button>
+  </div>
+
+  <div class="preview-panel">
+    <div class="preview-toolbar">
+      <button class="btn-pdf" onclick="downloadPDF()">📄 Download PDF</button>
+      <button class="btn-whatsapp" onclick="shareToWhatsApp()">💬 WhatsApp</button>
+      <button class="btn-print" onclick="window.print()">🖨️ Print</button>
+    </div>
+    <div class="quotation-container" id="quotationDoc">
+      <div style="text-align:center; color:#94a3b8; padding:80px 0; font-size:14px; font-weight: 500;">Fill form & Generate</div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Aligned exactly with your Quotation Web App URL
+const DB_URL = "https://script.google.com/macros/s/AKfycbz7vTFZevifbAMfMHH7XxG7cI3Zgv_uCnLgK1DKfdhCQ3LF__JC4HIH8wvTH5BKhL59Uw/exec";
+// Secure, non-redirect, CORS-enabled Google Sheets export URL
+const SPREADSHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/1OympSCR6CIcQ0re9kdGRf3noTUfSw2Tgvm-oPRoHD10/gviz/tq?tqx=out:csv";
+
+let currentYear = new Date().getFullYear();
+let parsedLibrary = {};
+let flatItemLibrary = {};
+let hasEstimatorBeenRun = false;
+let sectionCount = 0;
+let itemCount = 0;
+let cachedRecentQuotes = [];
+
+const IDB_DB_NAME = 'AhmadAluDirectoryDB';
+const IDB_STORE_NAME = 'handles';
+const IDB_KEY_NAME = 'savedFolder';
+
+function getIDB() {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open(IDB_DB_NAME, 1);
+    request.onupgradeneeded = (e) => { e.target.result.createObjectStore(IDB_STORE_NAME); };
+    request.onsuccess = (e) => resolve(e.target.result);
+    request.onerror = (e) => reject(e.target.error);
+  });
+}
+
+async function saveDirectoryHandle(handle) {
+  const db = await getIDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(IDB_STORE_NAME, 'readwrite');
+    const store = tx.objectStore(IDB_STORE_NAME);
+    const req = store.put(handle, IDB_KEY_NAME);
+    req.onsuccess = () => resolve();
+    req.onerror = () => reject(req.error);
+  });
+}
+
+async function loadDirectoryHandle() {
+  try {
+    const db = await getIDB();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(IDB_STORE_NAME, 'readonly');
+      const store = tx.objectStore(IDB_STORE_NAME);
+      const req = store.get(IDB_KEY_NAME);
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+  } catch (e) { return null; }
+}
+
+let savedFolderHandle = null;
+
+async function selectAutoSaveFolder() {
+  if (!window.showDirectoryPicker) {
+    alert("This browser doesn't fully support the local File System Access API. Standard downloads will go to your default Downloads folder instead.");
+    return;
+  }
+  try {
+    const handle = await window.showDirectoryPicker({ mode: 'readwrite' });
+    await saveDirectoryHandle(handle);
+    savedFolderHandle = handle;
+    updateFolderStatusUI(handle.name);
+    alert(`Success! Automatic save folder registered: "${handle.name}".`);
+  } catch (e) {
+    console.error(e);
+    alert("Folder selection cancelled or failed.");
+  }
+}
+
+function updateFolderStatusUI(folderName) {
+  const statusEl = document.getElementById('folderStatus');
+  if (statusEl) {
+    statusEl.innerHTML = folderName ? `Status: Auto-saving to <strong style="color: #16a34a;">${folderName}</strong>` : `Status: Default Downloads folder`;
+  }
+}
+
+async function initFolderSelection() {
+  const handle = await loadDirectoryHandle();
+  if (handle) {
+    savedFolderHandle = handle;
+    updateFolderStatusUI(handle.name);
+  }
+}
+
+async function verifyPermission(fileHandle, readWrite) {
+  const options = {};
+  if (readWrite) { options.mode = 'readwrite'; }
+  if ((await fileHandle.queryPermission(options)) === 'granted') { return true; }
+  if ((await fileHandle.requestPermission(options)) === 'granted') { return true; }
+  return false;
+}
+
+function switchMobileTab(tab) {
+  document.querySelectorAll('.mobile-tab-btn').forEach(btn => btn.classList.remove('active'));
+  document.getElementById('formPanel').classList.remove('active');
+  const previewPanel = document.querySelector('.preview-panel');
+  previewPanel.classList.remove('active');
+
+  if (tab === 'form') {
+    document.getElementById('formPanel').classList.add('active');
+    event.currentTarget.classList.add('active');
+  } else {
+    previewPanel.classList.add('active');
+    event.currentTarget.classList.add('active');
+    generateQuotation(); 
+  }
+}
+
+function copyToClipboard(btn, ibanText) {
+  navigator.clipboard.writeText(ibanText.replace(/\s+/g, '')).then(() => {
+    const originalContent = btn.innerHTML;
+    btn.style.borderColor = '#16a34a';
+    btn.style.color = '#16a34a';
+    btn.innerHTML = `<span>Copied!</span><span style="font-size:11px;">✅</span>`;
+    setTimeout(() => {
+      btn.style.borderColor = '';
+      btn.style.color = '';
+      btn.innerHTML = originalContent;
+    }, 1500);
+  }).catch(err => { console.error("Failed to copy IBAN text", err); });
+}
+
+function fetchRecentQuotes() {
+  const listEl = document.getElementById('recentQuotesList');
+  if (!listEl) return;
+  listEl.innerHTML = '<div style="text-align: center; color: #94a3b8; padding: 10px;">Loading History...</div>';
+  
+  fetch(DB_URL)
+  .then(res => {
+    if (!res.ok) throw new Error("HTTP error " + res.status);
+    return res.json();
+  })
+  .then(quotes => {
+    cachedRecentQuotes = quotes;
+    renderRecentQuotes(quotes);
+  })
+  .catch(err => {
+    console.error(err);
+    listEl.innerHTML = `
+      <div style="text-align: center; color: #ef4444; padding: 8px; font-size: 10px; line-height: 1.4;">
+        ⚠️ Connection Error<br>
+        <span style="font-size:9px; color:#64748b;">Ensure Web App is deployed as "Anyone"</span>
+      </div>`;
+  });
+}
+
+function renderRecentQuotes(quotes) {
+  const listEl = document.getElementById('recentQuotesList');
+  if (!listEl) return;
+  if (!quotes || quotes.length === 0) {
+    listEl.innerHTML = '<div style="text-align: center; color: #64748b; padding: 10px;">No quotations found</div>';
+    return;
+  }
+  listEl.innerHTML = '';
+  quotes.forEach(q => {
+    const div = document.createElement('div');
+    div.style.padding = '8px';
+    div.style.borderBottom = '1px solid #e2e8f0';
+    div.style.cursor = 'pointer';
+    div.style.display = 'flex';
+    div.style.justifyContent = 'space-between';
+    div.style.alignItems = 'center';
+    div.className = 'recent-quote-item';
+    
+    let total = 0;
+    if (q.itemsJson) {
+      try {
+        const items = JSON.parse(q.itemsJson);
+        total = items.reduce((s, i) => s + (parseFloat(i.amount) || 0), 0);
+      } catch(e) {}
+    }
+    
+    const displayTotal = total.toLocaleString('en', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    div.innerHTML = `
+      <span><strong>${q.ref}</strong> - ${q.clientAddr || 'No Address'}</span>
+      <span style="color:#16a34a;font-weight:bold;">AED ${displayTotal}</span>
+    `;
+    div.onclick = () => loadQuoteFromDirectory(q);
+    listEl.appendChild(div);
+  });
+}
+
+function filterRecentQuotes() {
+  const term = document.getElementById('searchQuotes').value.toLowerCase();
+  const filtered = cachedRecentQuotes.filter(q => 
+    (q.ref && q.ref.toLowerCase().includes(term)) || 
+    (q.clientAddr && q.clientAddr.toLowerCase().includes(term))
+  );
+  renderRecentQuotes(filtered);
+}
+
+function loadQuoteFromDirectory(q) {
+  document.getElementById('quotRef').value = q.ref || '';
+  document.getElementById('clientAddr').value = q.clientAddr || '';
+  document.getElementById('clientPhone').value = q.clientPhone || '';
+  document.getElementById('clientEmail').value = q.clientEmail || '';
+  document.getElementById('subject').value = q.subject || '';
+  
+  if (q.date) {
+    try {
+      const d = new Date(q.date);
+      if (!isNaN(d.getTime())) {
+        document.getElementById('quotDate').valueAsDate = d;
+      }
+    } catch(e) {}
+  }
+
+  if (q.itemsJson) {
+    try {
+      const itemsData = JSON.parse(q.itemsJson);
+      deserializeItems(itemsData);
+    } catch(e) { console.error("Could not parse itemsJson", e); }
+  }
+  generateQuotation();
+  alert(`Loaded Quotation: Ref "${q.ref}" for "${q.clientAddr || 'No Name'}".`);
+}
+
+function deserializeItems(itemsData) {
+  document.getElementById('sectionsContainer').innerHTML = '';
+  sectionCount = 0;
+  itemCount = 0;
+  
+  let lastSectionTitle = null;
+  let currentSectionId = null;
+
+  itemsData.forEach(item => {
+    const secTitle = item.sectionTitle || 'Section 1';
+    if (secTitle !== lastSectionTitle) {
+      currentSectionId = addSection(secTitle);
+      lastSectionTitle = secTitle;
+    }
+    
+    const rateVal = (item.rate !== undefined && item.rate !== '') ? item.rate : 
+                    (item.price !== undefined && item.price !== '') ? item.price : 
+                    (item.amount !== undefined) ? item.amount : '';
+    
+    let isFixed = item.priceType === 'Fixed';
+    if (item.priceType === undefined) {
+      if (item.rate === undefined && item.price === undefined && item.amount !== undefined) {
+        isFixed = true; 
+      } else if (item.size === '-' || !item.size) {
+        isFixed = true;
+      }
+    }
+
+    addItemToSection(currentSectionId, item.itemName || '', item.desc || '', rateVal, isFixed);
+    const id = itemCount;
+    
+    const calcEl = document.getElementById('calc_' + id);
+    if (calcEl && item.size) { calcEl.dataset.sizeText = item.size; }
+    if (calcEl && item.roundedArea) { calcEl.dataset.roundedArea = item.roundedArea; }
+
+    if (item.sizes && Array.isArray(item.sizes)) {
+      let hasSizeData = false;
+      item.sizes.forEach((sz, idx) => {
+        const s = idx + 1;
+        if (s <= 4) {
+          const wVal = sz.w || '';
+          const hVal = sz.h || '';
+          const qtyVal = sz.qty || '';
+          document.getElementById(`w${s}_${id}`).value = wVal;
+          document.getElementById(`h${s}_${id}`).value = hVal;
+          document.getElementById(`qty${s}_${id}`).value = qtyVal;
+          if (wVal !== '' || hVal !== '') { hasSizeData = true; }
+        }
+      });
+      if (hasSizeData) {
+        document.getElementById('toggle_size_' + id).checked = true;
+        toggleSizeDisplay(id);
+      }
+    }
+    calcArea(id);
+  });
+  generateQuotation();
+}
+
+function processLibraryCSV(csvText) {
+  const rows = parseCSV(csvText);
+  if (rows.length === 0) return {};
+
+  const tempLib = {};
+  const firstRow = rows[0].map(h => h.toLowerCase().trim());
+  
+  const idxCat = firstRow.findIndex(h => h.includes('category'));
+  const idxItem = firstRow.findIndex(h => h.includes('item name') || h === 'item');
+  const idxDesc = firstRow.findIndex(h => h.includes('description') || h.includes('details'));
+  const idxPrice = firstRow.findIndex(h => h.includes('price') || h.includes('rate'));
+  const idxForm = firstRow.findIndex(h => h.includes('formula'));
+
+  let activeCategory = "Glass Room";
+
+  for (let i = 1; i < rows.length; i++) {
+    const row = rows[i];
+    if (!row || row.length < 2) continue;
+
+    const name = row[idxItem] ? row[idxItem].trim() : "";
+    const desc = row[idxDesc] ? row[idxDesc].trim() : "";
+    
+    if (!name || name.toLowerCase().includes('item name')) continue;
+
+    let category = activeCategory;
+    if (idxCat !== -1 && row[idxCat]) category = row[idxCat].trim();
+
+    let price = 0;
+    if (idxPrice !== -1 && row[idxPrice]) price = parseFloat(row[idxPrice].replace(/[^0-9.]/g, '')) || 0;
+    
+    const formula = idxForm !== -1 && row[idxForm] ? row[idxForm].trim().toLowerCase() : "";
+
+    if (!tempLib[category]) tempLib[category] = [];
+    tempLib[category].push({ name, desc, rate: price, formula });
+  }
+  return tempLib;
+}
+
+function parseCSV(text) {
+  let lines = []; let row = [""]; let inQuotes = false;
+  for (let i = 0; i < text.length; i++) {
+    let c = text[i]; let next = text[i+1];
+    if (c === '"') { if (inQuotes && next === '"') { row[row.length - 1] += '"'; i++; } else inQuotes = !inQuotes; }
+    else if (c === ',' && !inQuotes) row.push("");
+    else if ((c === '\r' || c === '\n') && !inQuotes) { if (c === '\r' && next === '\n') i++; lines.push(row); row = [""]; }
+    else row[row.length - 1] += c;
+  }
+  lines.push(row); return lines;
+}
+
+function loadSpreadsheetLibrary() {
+  fetch(SPREADSHEET_CSV_URL).then(res => res.text()).then(csvText => {
+    parsedLibrary = processLibraryCSV(csvText);
+    rebuildFlatItemLibrary();
+    populateCategorySelector();
+  }).catch(e => console.error("Error loading spreadsheet library:", e));
+}
+
+function rebuildFlatItemLibrary() {
+  flatItemLibrary = {};
+  const datalist = document.getElementById('itemNamesDatalist');
+  if (!datalist) return;
+  datalist.innerHTML = '';
+  Object.keys(parsedLibrary).forEach(cat => {
+    parsedLibrary[cat].forEach(item => {
+      flatItemLibrary[item.name] = item;
+      let opt = document.createElement('option'); opt.value = item.name;
+      datalist.appendChild(opt);
+    });
+  });
+}
+
+// --- UPGRADED SHARE FUNCTION (WAITS FOR IMAGES BEFORE EXPORTING) ---
+async function shareToWhatsApp() {
+  const ref = document.getElementById('quotRef').value || 'AA-2026-215';
+  const phone = document.getElementById('clientPhone').value.replace(/\D/g,'');
+  const msg = "Hello, please find your quotation Ref: " + ref;
+  
+  const element = document.getElementById('quotationDoc');
+  if (!element || element.innerHTML.includes('Fill form & Generate')) {
+    alert("Please generate the quotation first.");
+    return;
+  }
+
+  triggerSilentCloudSave();
+
+  const opt = {
+    margin:       0,
+    filename:     `${ref}.pdf`,
+    image:        { type: 'jpeg', quality: 0.98 },
+    html2canvas:  { scale: 2, useCORS: true, logging: false },
+    jsPDF:        { unit: 'pt', format: 'a4', orientation: 'portrait' },
+    pagebreak:    { mode: ['css', 'legacy'] }
+  };
+
+  try {
+    // CRITICAL CORRECTION: Force wait for images to load, ensuring Signatures and Logo never come out blank
+    const images = element.querySelectorAll('img');
+    const imageLoadPromises = Array.from(images).map(img => {
+      if (img.complete) return Promise.resolve();
+      return new Promise(resolve => {
+        img.onload = resolve;
+        img.onerror = resolve; // Continue anyway if an image is completely broken
+      });
+    });
+    
+    // Wait for all images in the document to finish loading
+    await Promise.all(imageLoadPromises);
+    
+    // Generate the PDF Blob
+    const pdfBlob = await html2pdf().set(opt).from(element).output('blob');
+    const file = new File([pdfBlob], `${ref}.pdf`, { type: 'application/pdf' });
+
+    if (
+      navigator.share && 
+      navigator.canShare && 
+      navigator.canShare({ files: [file] })
+    ) {
+      await navigator.share({
+        files: [file],
+        title: ref,
+        text: msg,
+      });
+      console.log('File shared natively successfully!');
+    } else {
+      alert("Direct file sharing is not supported on this browser/device. Downloading PDF and launching WhatsApp instead...");
+      html2pdf().set(opt).from(element).save();
+      window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
+    }
+  } catch (error) {
+    if (error.name !== 'AbortError') {
+      console.error('Error sharing file:', error);
+      alert(`Could not share: ${error.message || error}`);
+    }
+  }
+}
+
+function populateCategorySelector() {
+  const sel = document.getElementById('workTypeSelector');
+  if (!sel) return;
+  sel.innerHTML = '<option value="Custom">Custom Input</option>';
+  Object.keys(parsedLibrary).forEach(cat => {
+    let opt = document.createElement('option'); opt.value = cat; opt.textContent = cat;
+    sel.appendChild(opt);
+  });
+}
+
+function evaluateFormula(formulaStr, globalW, globalL, globalH) {
+  let str = formulaStr.toLowerCase().replace(/×/g, '*').trim();
+  
+  let wVal = 0;
+  let hVal = 0;
+  let qtyVal = 1;
+  
+  if (str.includes('length') && str.includes('width')) {
+    wVal = globalL; hVal = globalW;
+  } else if (str.includes('width') && str.includes('height')) {
+    wVal = globalW; hVal = globalH;
+  } else if (str.includes('length') && str.includes('height')) {
+    wVal = globalL; hVal = globalH;
+  } else {
+    wVal = globalL || globalW; hVal = globalH || globalW;
+  }
+  
+  const qtyMatch = str.match(/\*\s*(\d+)/);
+  if (qtyMatch) { qtyVal = parseInt(qtyMatch[1]) || 1; }
+  return { w: wVal, h: hVal, qty: qtyVal };
+}
+
+function addSection(title = '') {
+  sectionCount++;
+  const sId = sectionCount;
+  const div = document.createElement('div');
+  div.className = 'section-block';
+  div.id = 'section_' + sId;
+  const defaultTitle = title || `Section ${sId}`;
+  
+  div.innerHTML = `
+    <div class="section-header-row">
+      <span style="font-size: 11px; font-weight: bold; color: #475569;">SECTION #${sId}:</span>
+      <input type="text" class="section-title-input" id="sec_title_${sId}" value="${defaultTitle}" oninput="generateQuotation()">
+      ${sId > 1 ? `<button class="btn-delete-section" onclick="removeSection(${sId})">✕ Delete Section</button>` : ''}
+    </div>
+    <div class="section-items" id="sec_items_${sId}"></div>
+    <button class="btn-add" style="border: 1px dashed #991b1b; color: #991b1b;" onclick="addItemToSection(${sId})">+ Add Item to ${defaultTitle}</button>
+  `;
+  
+  const sectionsCont = document.getElementById('sectionsContainer');
+  if (sectionsCont) { sectionsCont.appendChild(div); }
+  
+  const titleInput = div.querySelector('.section-title-input');
+  const addBtn = div.querySelector('.btn-add');
+  titleInput.addEventListener('input', () => {
+    addBtn.textContent = `+ Add Item to ${titleInput.value || 'this Section'}`;
+  });
+  
+  return sId;
+}
+
+function removeSection(sId) {
+  if (confirm("Are you sure you want to remove this entire section and all its items?")) {
+    const secEl = document.getElementById('section_' + sId);
+    if (secEl) { secEl.remove(); }
+    generateQuotation();
+  }
+}
+
+function onWorkTypeChange(val) {
+  if (val === 'Custom') return;
+  document.getElementById('subject').value = "Supply & Installation of " + val;
+  
+  const sec1Items = document.getElementById('sec_items_1');
+  if (sec1Items) {
+    sec1Items.innerHTML = '';
+  } else {
+    addSection("Section 1");
+  }
+
+  const globalW = parseFloat(document.getElementById('globalWidth').value) || 0;
+  const globalL = parseFloat(document.getElementById('globalLength').value) || 0;
+  const globalH = parseFloat(document.getElementById('globalHeight').value) || 0;
+
+  if (!parsedLibrary || !parsedLibrary[val]) {
+    addItemToSection(1);
+    return;
+  }
+
+  parsedLibrary[val].forEach(item => {
+    const isFixed = !item.formula;
+    addItemToSection(1, item.name || '', item.desc || '', item.rate || 0, isFixed);
+    const currentId = itemCount;
+    
+    if (hasEstimatorBeenRun && item.formula) {
+      const dims = evaluateFormula(item.formula, globalW, globalL, globalH);
+      if (dims.w > 0 && dims.h > 0) {
+        const toggleSizeEl = document.getElementById('toggle_size_' + currentId);
+        if (toggleSizeEl) {
+          toggleSizeEl.checked = true;
+          toggleSizeDisplay(currentId);
+        }
+        
+        const wInput = document.getElementById(`w1_${currentId}`);
+        const hInput = document.getElementById(`h1_${currentId}`);
+        const qtyInput = document.getElementById(`qty1_${currentId}`);
+        
+        if (wInput) wInput.value = dims.w;
+        if (hInput) hInput.value = dims.h;
+        if (qtyInput) qtyInput.value = dims.qty;
+        
+        calcArea(currentId);
+      }
+    } else {
+      calcArea(currentId);
+    }
+  });
+  generateQuotation();
+}
+
+function addItemToSection(sId, pName = '', pDesc = '', pRate = '', pFixed = false) {
+  itemCount++; const id = itemCount;
+  const div = document.createElement('div'); div.className = 'item-row'; div.id = 'item_' + id;
+  
+  const isFixedSelected = pFixed ? 'selected' : '';
+  const isRateSelected = !pFixed ? 'selected' : '';
+
+  div.innerHTML = `
+    <h4>Item #${id}</h4><button class="btn-remove" onclick="removeItem(${id})">✕</button>
+    <div class="item-grid">
+      <div class="full"><label>Item Name</label><input type="text" id="name_${id}" list="itemNamesDatalist" value="${pName}" oninput="onItemNameInput(${id}, this.value)"></div>
+      <div class="full"><label>Description</label><textarea id="desc_${id}" rows="2">${pDesc}</textarea></div>
+      <div class="full" style="margin-top: 5px;"><input type="checkbox" id="toggle_size_${id}" onchange="toggleSizeDisplay(${id})"> <label style="display:inline; margin-left: 5px;">Add Custom Sizes</label></div>
+      
+      <div class="full sizes-container" id="sizes_container_${id}">
+        <div class="sizes-title">📐 Custom Sizes (Up to 4 unique measurements)</div>
+        <div class="size-row">
+          <span>#1</span><input type="number" id="w1_${id}" placeholder="W (cm)" oninput="calcArea(${id})">
+          <span>×</span><input type="number" id="h1_${id}" placeholder="H (cm)" oninput="calcArea(${id})">
+          <span>Qty</span><input type="number" id="qty1_${id}" value="1" oninput="calcArea(${id})">
+        </div>
+        <div class="size-row">
+          <span>#2</span><input type="number" id="w2_${id}" placeholder="W (cm)" oninput="calcArea(${id})">
+          <span>×</span><input type="number" id="h2_${id}" placeholder="H (cm)" oninput="calcArea(${id})">
+          <span>Qty</span><input type="number" id="qty2_${id}" oninput="calcArea(${id})">
+        </div>
+        <div class="size-row">
+          <span>#3</span><input type="number" id="w3_${id}" placeholder="W (cm)" oninput="calcArea(${id})">
+          <span>×</span><input type="number" id="h3_${id}" placeholder="H (cm)" oninput="calcArea(${id})">
+          <span>Qty</span><input type="number" id="qty3_${id}" oninput="calcArea(${id})">
+        </div>
+        <div class="size-row">
+          <span>#4</span><input type="number" id="w4_${id}" placeholder="W (cm)" oninput="calcArea(${id})">
+          <span>×</span><input type="number" id="h4_${id}" placeholder="H (cm)" oninput="calcArea(${id})">
+          <span>Qty</span><input type="number" id="qty4_${id}" oninput="calcArea(${id})">
+        </div>
+      </div>
+      
+      <div style="margin-top: 5px;">
+        <label>Price Type</label>
+        <select id="pType_${id}" onchange="calcArea(${id})">
+          <option value="Rate" ${isRateSelected}>Per m²</option>
+          <option value="Fixed" ${isFixedSelected}>Fixed</option>
+        </select>
+      </div>
+      <div style="margin-top: 5px;"><label>Rate (AED)</label><input type="number" id="rate_${id}" value="${pRate}" oninput="calcArea(${id})"></div>
+    </div>
+    <div class="calc-result" id="calc_${id}" data-amount="0">Pending info...</div>`;
+  
+  const secEl = document.getElementById('sec_items_' + sId);
+  if (secEl) { secEl.appendChild(div); }
+  calcArea(id);
+  generateQuotation();
+}
+
+function onItemNameInput(id, val) {
+  if (flatItemLibrary[val]) {
+    document.getElementById('desc_' + id).value = flatItemLibrary[val].desc;
+    document.getElementById('rate_' + id).value = flatItemLibrary[val].rate;
+    const isFixed = !flatItemLibrary[val].formula;
+    document.getElementById('pType_' + id).value = isFixed ? 'Fixed' : 'Rate';
+    calcArea(id);
+  }
+}
+
+function toggleSizeDisplay(id) {
+  const cont = document.getElementById('sizes_container_' + id);
+  if (cont) { cont.style.display = document.getElementById('toggle_size_' + id).checked ? 'block' : 'none'; }
+  calcArea(id);
+}
+
+function removeItem(id) { 
+  const itemEl = document.getElementById('item_' + id);
+  if (itemEl) { itemEl.remove(); }
+  generateQuotation(); 
+}
+
+function calcArea(id) {
+  const rateEl = document.getElementById('rate_' + id);
+  const pTypeEl = document.getElementById('pType_' + id);
+  const toggleSizeEl = document.getElementById('toggle_size_' + id);
+  if (!rateEl || !pTypeEl || !toggleSizeEl) return;
+  
+  const rate = parseFloat(rateEl.value) || 0;
+  const pType = pTypeEl.value;
+  const sizeOn = toggleSizeEl.checked;
+  let totalArea = 0; let totalQty = 0; let sizeTxt = [];
+
+  if (sizeOn) {
+    for (let s = 1; s <= 4; s++) {
+      const wEl = document.getElementById(`w${s}_${id}`);
+      const hEl = document.getElementById(`h${s}_${id}`);
+      const qtyEl = document.getElementById(`qty${s}_${id}`);
+      const w = wEl ? parseFloat(wEl.value) || 0 : 0;
+      const h = hEl ? parseFloat(hEl.value) || 0 : 0;
+      const q = qtyEl ? parseFloat(qtyEl.value) || (s === 1 ? 1 : 0) : (s === 1 ? 1 : 0);
+      
+      if (w > 0 && h > 0 && q > 0) {
+        totalArea += (w / 100) * (h / 100) * q;
+        totalQty += q;
+        sizeTxt.push(`${w}×${h}cm (${q})`);
+      }
+    }
+  }
+
+  let amount = 0;
+  let roundedArea = 0;
+  if (pType === 'Fixed') {
+    amount = rate;
+  } else {
+    if (totalArea > 0) {
+      roundedArea = Math.ceil(totalArea * 2) / 2;
+      amount = roundedArea * rate;
+    } else {
+      amount = rate;
+    }
+  }
+
+  const el = document.getElementById('calc_' + id);
+  if (el) {
+    el.dataset.amount = amount;
+    if (sizeOn) {
+      el.dataset.sizeText = sizeTxt.join(' | ') || '-';
+      el.dataset.roundedArea = roundedArea > 0 ? roundedArea.toFixed(1) : '';
+    } else {
+      if (!el.dataset.sizeText) { el.dataset.sizeText = '-'; }
+    }
+    el.textContent = "Amount: AED " + amount.toFixed(2);
+  }
+}
+
+function getItems() {
+  let arr = [];
+  document.querySelectorAll('.section-block').forEach(secBlock => {
+    const sId = secBlock.id.replace('section_', '');
+    const titleEl = document.getElementById('sec_title_' + sId);
+    const sectionTitle = titleEl ? titleEl.value : `Section ${sId}`;
+    
+    secBlock.querySelectorAll('.item-row').forEach(row => {
+      const id = row.id.replace('item_', '');
+      const calcEl = document.getElementById('calc_' + id);
+      let sizesArr = [];
+      for (let s = 1; s <= 4; s++) {
+        const wEl = document.getElementById(`w${s}_${id}`);
+        const hEl = document.getElementById(`h${s}_${id}`);
+        const qtyEl = document.getElementById(`qty${s}_${id}`);
+        sizesArr.push({
+          w: wEl ? wEl.value : '',
+          h: hEl ? hEl.value : '',
+          qty: qtyEl ? qtyEl.value : ''
+        });
+      }
+
+      const nameEl = document.getElementById('name_' + id);
+      const descEl = document.getElementById('desc_' + id);
+      const pTypeEl = document.getElementById('pType_' + id);
+      const rateEl = document.getElementById('rate_' + id);
+
+      arr.push({
+        sectionTitle: sectionTitle,
+        itemName: nameEl ? nameEl.value : '',
+        desc: descEl ? descEl.value : '',
+        size: calcEl ? calcEl.dataset.sizeText || '-' : '-',
+        roundedArea: calcEl ? calcEl.dataset.roundedArea || '' : '',
+        amount: calcEl ? parseFloat(calcEl.dataset.amount) || 0 : 0,
+        priceType: pTypeEl ? pTypeEl.value : 'Rate',
+        rate: rateEl ? rateEl.value : '0',
+        sizes: sizesArr
+      });
+    });
+  });
+  return arr;
+}
+
+function generateIsometricSVG(w, l, h) {
+  if (isNaN(w) || isNaN(l) || isNaN(h) || w <= 0 || l <= 0 || h <= 0) { return ''; }
+  const scale = 110 / Math.max(w, l, h, 100);
+  const angle = 30 * (Math.PI / 180);
+  const cosA = Math.cos(angle);
+  const sinA = Math.sin(angle);
+  const dxW = -w * scale * cosA;
+  const dyW = w * scale * sinA;
+  const dxL = l * scale * cosA;
+  const dyL = l * scale * sinA;
+  const dyH = -h * scale;
+  const r_p0 = { x: 0, y: 0 };
+  const r_p1 = { x: dxL, y: dyL };
+  const r_p2 = { x: dxL + dxW, y: dyL + dyW };
+  const r_p3 = { x: dxW, y: dyW };
+  const r_t0 = { x: r_p0.x, y: r_p0.y + dyH };
+  const r_t1 = { x: r_p1.x, y: r_p1.y + dyH };
+  const r_t2 = { x: r_p2.x, y: r_p2.y + dyH };
+  const r_t3 = { x: r_p3.x, y: r_p3.y + dyH };
+  const allX = [r_p0.x, r_p1.x, r_p2.x, r_p3.x, r_t0.x, r_t1.x, r_t2.x, r_t3.x];
+  const allY = [r_p0.y, r_p1.y, r_p2.y, r_p3.y, r_t0.y, r_t1.y, r_t2.y, r_t3.y];
+  const minX = Math.min(...allX);
+  const maxX = Math.max(...allX);
+  const minY = Math.min(...allY);
+  const maxY = Math.max(...allY);
+  const boxW = maxX - minX;
+  const boxH = maxY - minY;
+  const shiftX = 225 - (minX + boxW / 2);
+  const shiftY = 125 - (minY + boxH / 2);
+  const p0 = { x: r_p0.x + shiftX, y: r_p0.y + shiftY };
+  const p1 = { x: r_p1.x + shiftX, y: r_p1.y + shiftY };
+  const p2 = { x: r_p2.x + shiftX, y: r_p2.y + shiftY };
+  const p3 = { x: r_p3.x + shiftX, y: r_p3.y + shiftY };
+  const t0 = { x: r_t0.x + shiftX, y: r_t0.y + shiftY };
+  const t1 = { x: r_t1.x + shiftX, y: r_t1.y + shiftY };
+  const t2 = { x: r_t2.x + shiftX, y: r_t2.y + shiftY };
+  const t3 = { x: r_t3.x + shiftX, y: r_t3.y + shiftY };
+  const offset = 22;
+  const wlStart = { x: p0.x - scale * cosA * offset, y: p0.y + scale * sinA * offset + 5 };
+  const wlEnd = { x: p3.x - scale * cosA * offset, y: p3.y + scale * sinA * offset + 5 };
+  const llStart = { x: p0.x + scale * cosA * offset, y: p0.y + scale * sinA * offset + 5 };
+  const llEnd = { x: p1.x + scale * cosA * offset, y: p1.y + scale * sinA * offset + 5 };
+  const hlStart = { x: p1.x + 25, y: p1.y };
+  const hlEnd = { x: t1.x + 25, y: t1.y };
+
+  return `
+    <div style="display: flex; flex-direction: column; align-items: center; margin-top: 20px; width: 100%; page-break-inside: avoid; break-inside: avoid;">
+      <div style="font-size: 11px; font-weight: bold; color: #991b1b; text-transform: uppercase; margin-bottom: 8px; letter-spacing: 1px; width: 100%; text-align: center;">📐 Structure Schematic (Isometric 3D - Section 1 Only)</div>
+      <div style="width: 100%; display: flex; justify-content: center; align-items: center; background: #fafafa; border: 1px dashed #cbd5e1; border-radius: 4px;">
+        <svg width="350" height="220" viewBox="0 0 450 280">
+          <polygon points="${p0.x},${p0.y} ${p1.x},${p1.y} ${p2.x},${p2.y} ${p3.x},${p3.y}" fill="rgba(0,0,0,0.01)" stroke="#cccccc" stroke-width="1.5" stroke-dasharray="3,3" />
+          <polygon points="${p0.x},${p0.y} ${p1.x},${p1.y} ${t1.x},${t1.y} ${t0.x},${t0.y}" fill="rgba(41, 128, 185, 0.06)" />
+          <polygon points="${p0.x},${p0.y} ${p3.x},${p3.y} ${t3.x},${t3.y} ${t0.x},${t0.y}" fill="rgba(41, 128, 185, 0.06)" />
+          <line x1="${p0.x}" y1="${p0.y}" x2="${t0.x}" y2="${t0.y}" stroke="#1e293b" stroke-width="3" />
+          <line x1="${p1.x}" y1="${p1.y}" x2="${t1.x}" y2="${t1.y}" stroke="#1e293b" stroke-width="3" />
+          <line x1="${p2.x}" y1="${p2.y}" x2="${t2.x}" y2="${t2.y}" stroke="#1e293b" stroke-width="3" />
+          <line x1="${p3.x}" y1="${p3.y}" x2="${t3.x}" y2="${t3.y}" stroke="#1e293b" stroke-width="3" />
+          <polygon points="${t0.x},${t0.y} ${t1.x},${t1.y} ${t2.x},${t2.y} ${t3.x},${t3.y}" fill="rgba(153, 27, 27, 0.08)" stroke="#991b1b" stroke-width="3" />
+          <line x1="${p0.x}" y1="${p0.y}" x2="${wlStart.x}" y2="${wlStart.y}" stroke="#999999" stroke-width="0.8" />
+          <line x1="${p3.x}" y1="${p3.y}" x2="${wlEnd.x}" y2="${wlEnd.y}" stroke="#999999" stroke-width="0.8" />
+          <line x1="${wlStart.x}" y1="${wlStart.y}" x2="${wlEnd.x}" y2="${wlEnd.y}" stroke="#991b1b" stroke-width="1.5" />
+          <circle cx="${wlStart.x}" cy="${wlStart.y}" r="2" fill="#991b1b" />
+          <circle cx="${wlEnd.x}" cy="${wlEnd.y}" r="2" fill="#991b1b" />
+          <text x="${(wlStart.x + wlEnd.x)/2 - 10}" y="${(wlStart.y + wlEnd.y)/2 + 15}" fill="#991b1b" font-size="10" font-weight="bold" text-anchor="middle">W: ${w} cm</text>
+          <line x1="${p0.x}" y1="${p0.y}" x2="${llStart.x}" y2="${llStart.y}" stroke="#999999" stroke-width="0.8" />
+          <line x1="${p1.x}" y1="${p1.y}" x2="${llEnd.x}" y2="${llEnd.y}" stroke="#999999" stroke-width="0.8" />
+          <line x1="${llStart.x}" y1="${llStart.y}" x2="${llEnd.x}" y2="${llEnd.y}" stroke="#991b1b" stroke-width="1.5" />
+          <circle cx="${llStart.x}" cy="${llStart.y}" r="2" fill="#991b1b" />
+          <circle cx="${llEnd.x}" cy="${llEnd.y}" r="2" fill="#991b1b" />
+          <text x="${(llStart.x + llEnd.x)/2 + 10}" y="${(llStart.y + llEnd.y)/2 + 15}" fill="#991b1b" font-size="10" font-weight="bold" text-anchor="middle">L: ${l} cm</text>
+          <line x1="${p1.x}" y1="${p1.y}" x2="${hlStart.x}" y2="${hlStart.y}" stroke="#999999" stroke-width="0.8" />
+          <line x1="${t1.x}" y1="${t1.y}" x2="${hlEnd.x}" y2="${hlEnd.y}" stroke="#999999" stroke-width="0.8" />
+          <line x1="${hlStart.x}" y1="${hlStart.y}" x2="${hlEnd.x}" y2="${hlEnd.y}" stroke="#991b1b" stroke-width="1.5" />
+          <circle cx="${hlStart.x}" cy="${hlStart.y}" r="2" fill="#991b1b" />
+          <circle cx="${hlEnd.x}" cy="${hlEnd.y}" r="2" fill="#991b1b" />
+          <text x="${hlStart.x + 10}" y="${(hlStart.y + hlEnd.y)/2 + 4}" fill="#991b1b" font-size="10" font-weight="bold" text-anchor="start">H: ${h} cm</text>
+        </svg>
+      </div>
+    </div>
+  `;
+}
+
+function numberToWords(num) {
+  const ones = ['','One','Two','Three','Four','Five','Six','Seven','Eight','Nine','Ten','Eleven','Twelve','Thirteen','Fourteen','Fifteen','Sixteen','Seventeen','Eighteen','Nineteen'];
+  const tens = ['','','Twenty','Thirty','Forty','Fifty','Sixty','Seventy','Eighty','Ninety'];
+  if (num === 0) return 'Zero';
+  function helper(n) {
+    if (n < 20) return ones[n];
+    if (n < 100) return tens[Math.floor(n/10)] + (n%10 ? ' ' + ones[n%10] : '');
+    if (n < 1000) return ones[Math.floor(n/100)] + ' Hundred' + (n%100 ? ' ' + helper(n%100) : '');
+    if (n < 100000) return helper(Math.floor(n/1000)) + ' Thousand' + (n%1000 ? ' ' + helper(n%1000) : '');
+    return helper(Math.floor(n/100000)) + ' Lakh' + (n%100000 ? ' ' + helper(n%100000) : '');
+  }
+  const intPart = Math.floor(num);
+  const decPart = Math.round((num - intPart) * 100);
+  let result = helper(intPart) + ' UAE Dirhams';
+  if (decPart > 0) result += ' and ' + helper(decPart) + ' Fils';
+  return result + ' Only';
+}
+
+function formatDate(dateStr) {
+  if (!dateStr) return '';
+  const d = new Date(dateStr + 'T00:00:00');
+  return `${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()}`;
+}
+
+function generateQuotation() {
+  const ref = document.getElementById('quotRef').value || 'AA-2026-215';
+  const date = formatDate(document.getElementById('quotDate').value);
+  const clientAddr = document.getElementById('clientAddr').value || 'Dubai, UAE';
+  const clientPhone = document.getElementById('clientPhone').value || 'NA';
+  const clientEmail = document.getElementById('clientEmail').value || 'NA';
+  const subject = document.getElementById('subject').value || 'Supply & Installation of Folding Door';
+  
+  const discountVal = parseFloat(document.getElementById('discountAED').value) || 0;
+  const isVat = document.getElementById('vatToggle').value === 'yes';
+  const globalW = parseFloat(document.getElementById('globalWidth').value) || 0;
+  const globalL = parseFloat(document.getElementById('globalLength').value) || 0;
+  const globalH = parseFloat(document.getElementById('globalHeight').value) || 0;
+
+  let rows = '';
+  let globalSr = 1;
+  let total = 0;
+
+  const sectionBlocks = document.querySelectorAll('.section-block');
+  
+  if (sectionBlocks.length === 0) { 
+    document.getElementById('quotationDoc').innerHTML = `
+      <div style="text-align:center; color:#94a3b8; padding:80px 0; font-size:14px; font-weight:500;">Fill form & Generate</div>`;
+    return; 
+  }
+
+  sectionBlocks.forEach(secBlock => {
+    const sId = secBlock.id.replace('section_', '');
+    const titleEl = document.getElementById('sec_title_' + sId);
+    const secTitle = titleEl ? titleEl.value : `Section ${sId}`;
+    const itemsInSec = secBlock.querySelectorAll('.item-row');
+
+    if (itemsInSec.length > 0) {
+      rows += `
+        <tr>
+          <td colspan="4" style="background: #fdf2f2; font-weight: bold; color: #991b1b; font-size: 11px; text-transform: uppercase; padding: 10px 12px; border-left: 4px solid #991b1b;">
+            📁 ${secTitle}
+          </td>
+        </tr>
+      `;
+
+      itemsInSec.forEach(itemRow => {
+        const id = itemRow.id.replace('item_', '');
+        const nameEl = document.getElementById('name_' + id);
+        const name = nameEl ? nameEl.value : '';
+        const descEl = document.getElementById('desc_' + id);
+        const desc = descEl ? descEl.value : '';
+        const calcEl = document.getElementById('calc_' + id);
+        
+        const size = calcEl ? calcEl.dataset.sizeText || '-' : '-';
+        const roundedArea = calcEl ? calcEl.dataset.roundedArea || '' : '';
+        const amount = calcEl ? parseFloat(calcEl.dataset.amount) || 0 : 0;
+        
+        total += amount;
+
+        const particularsCell = name
+          ? `<span class="item-name">${name}</span><span class="item-desc">${desc}</span>`
+          : `<span class="item-desc">${desc}</span>`;
+
+        const sizeCell = size ? size.split(' | ').join('<br>') : '-';
+        const areaLabel = (roundedArea && roundedArea !== '0.0')
+          ? `<br><span style="font-size:10px;color:#991b1b;font-weight:bold;">Total Area: ${roundedArea} m²</span>`
+          : '';
+
+        rows += `<tr>
+          <td style="text-align:center;font-weight:bold;vertical-align:top;">${globalSr++}</td>
+          <td style="vertical-align:top;">${particularsCell}</td>
+          <td style="text-align:center;font-weight:bold;vertical-align:top;font-size:11px;line-height:1.4;">
+            ${sizeCell}
+            ${areaLabel}
+          </td>
+          <td style="text-align:right;font-weight:bold;vertical-align:top;">
+            ${amount > 0 ? amount.toLocaleString('en',{minimumFractionDigits:2,maximumFractionDigits:2}) : '-'}
+          </td>
+        </tr>`;
+      });
+    }
+  });
+
+  const netTotal = Math.max(0, total - discountVal);
+  const vat = isVat ? netTotal * 0.05 : 0;
+  const grand = netTotal + vat;
+
+  let mathRows = '';
+  if (discountVal > 0) {
+    mathRows += `
+      <tr>
+        <td colspan="2" style="text-align:right;font-weight:bold;font-size:12px;background:#ffffff!important;">Subtotal</td>
+        <td></td>
+        <td style="text-align:right;font-weight:bold;background:#ffffff!important;">${total.toLocaleString('en',{minimumFractionDigits:2,maximumFractionDigits:2})} AED</td>
+      </tr>
+      <tr>
+        <td colspan="2" style="text-align:right;font-weight:bold;font-size:12px;background:#fef2f2!important;color:#ef4444;">Discount (Flat AED)</td>
+        <td></td>
+        <td style="text-align:right;font-weight:bold;background:#fef2f2!important;color:#ef4444;">-${discountVal.toLocaleString('en',{minimumFractionDigits:2,maximumFractionDigits:2})} AED</td>
+      </tr>
+      <tr>
+        <td colspan="2" style="text-align:right;font-weight:bold;font-size:12px;background:#ffffff!important;">Net Total</td>
+        <td></td>
+        <td style="text-align:right;font-weight:bold;background:#ffffff!important;">${netTotal.toLocaleString('en',{minimumFractionDigits:2,maximumFractionDigits:2})} AED</td>
+      </tr>
+    `;
+  }
+
+  if (isVat) {
+    mathRows += `
+      <tr>
+        <td colspan="2" style="text-align:right;font-weight:bold;font-size:12px;background:#fef2f2!important;">5% VAT</td>
+        <td></td>
+        <td style="text-align:right;font-weight:bold;background:#fef2f2!important;color:#991b1b;">${vat.toLocaleString('en',{minimumFractionDigits:2,maximumFractionDigits:2})} AED</td>
+      </tr>
+    `;
+  }
+
+  const watermarkHTML = `
+    <div class="watermark-container">
+      <div class="watermark-text">AHMAD ALUMINIUM &amp; GLASS</div>
+    </div>`;
+
+  const headerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;padding-bottom:12px;border-bottom:3px solid #991b1b;margin-bottom:10px;">
+      <div style="display:flex;align-items:center;gap:15px;">
+        <img src="Ahmad_Aluminium_Logo.png" alt="Ahmad Aluminium Logo" style="height:65px; max-width:280px; object-fit:contain; border-radius:4px;">
+      </div>
+      <div style="text-align:right;">
+        <div style="font-size:38px;font-weight:900;color:#991b1b;letter-spacing:5px;text-transform:uppercase;">QUOTATION</div>
+      </div>
+    </div>
+    <div style="background:#fef2f2;border:1px solid #fca5a5;padding:7px 14px;display:flex;justify-content:space-between;font-size:12px;margin-bottom:12px;border-radius:4px;align-items:center; width:100%;">
+      <span>📞 <strong>+971588490784</strong></span>
+      <span>✉️ info@ahmadaluminium.ae</span>
+      <span>🌐 www.ahmadaluminium.ae</span>
+    </div>`;
+
+  const page1 = `
+  <div class="quotation-page">
+    ${watermarkHTML}
+    <div style="position:relative;z-index:1;">
+      ${headerHTML}
+      <div class="client-meta-grid">
+        <div>
+          <div class="section-label">Client Details</div>
+          <div><strong>Address:</strong> ${clientAddr}</div>
+          <div><strong>Phone:</strong> &nbsp;${clientPhone}</div>
+          <div><strong>Email:</strong> &nbsp;&nbsp;${clientEmail}</div>
+        </div>
+        <div>
+          <div class="section-label">Document Info</div>
+          <!-- Ref / Quotation number highlighted in bold red -->
+          <div><strong>Reference No:</strong> <span style="color: #991b1b; font-weight: bold;">${ref}</span></div>
+          <div><strong>Date:</strong> ${date}</div>
+          <div><strong>EMAIL:</strong> info@ahmadaluminium.ae</div>
+        </div>
+      </div>
+      <div style="text-align:center;font-style:italic;font-weight:bold;font-size:14px;color:#991b1b;border-bottom:2px solid #991b1b;border-top:2px solid #991b1b;padding:8px 0;margin-bottom:15px;">
+        Subject: ${subject}
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th style="width:8%;text-align:center;">Sr.</th>
+            <th style="width:52%;">Particulars / Description</th>
+            <th style="width:22%;text-align:center;">Size (cm)</th>
+            <th style="width:18%;text-align:right;">Total Amount (AED)</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rows}
+          ${mathRows}
+          <tr class="total-row">
+            <td colspan="2" style="text-align:right;font-weight:bold;font-size:13px;">Grand Total</td>
+            <td style="text-align:center;font-weight:bold;color:#991b1b;">-</td>
+            <td style="text-align:right;">${grand.toLocaleString('en',{minimumFractionDigits:2,maximumFractionDigits:2})} AED</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="amount-words">Grand Total: <strong>${numberToWords(grand)}.</strong></div>
+      ${generateIsometricSVG(globalW, globalL, globalH)}
+    </div>
+  </div>`;
+
+  // REMOVED THE "Page 2 Below" text and replaced with a clean divider line on the screen
+  const pageBreak = `<div class="page-break-divider" style="height: 1px; border-bottom: 1px dashed #cbd5e1; margin: 24px 0;"></div>`;
+
+  const page2 = `
+  <div class="quotation-page-footer">
+    ${watermarkHTML}
+    <div style="position:relative;z-index:1;">
+      <div style="font-size:11px;color:#94a3b8;text-align:right;margin-bottom:12px;">Reference No: <span style="color: #991b1b; font-weight: bold;">${ref}</span> &nbsp;|&nbsp; Continued</div>
+      <div class="doc-section-title">Payment terms:</div>
+      <ul class="doc-list">
+        <li>60% Advance Payment.</li>
+        <li>30% on all material delivery on site before installation.</li>
+        <li>10% after Completion.</li>
+        <li>5% VAT is calculated on final invoices according to official tax policy.</li>
+      </ul>
+      <p style="font-size:12px;margin:8px 0;color:#475569;">(Full balance amount shall be paid after completion of the above said works).</p>
+      <div class="doc-section-title" style="margin-top:18px;">Terms &amp; Conditions:</div>
+      <ul class="doc-list">
+        <li>Additional works subject to extra cost and to be agreed prior to start of works.</li>
+        <li>All size mentioned are in CMS / MTRS and is final.</li>
+        <li>Power supply to be provided by the Client.</li>
+        <li>All required approvals to be provided by the client.</li>
+        <li>Validity of This Offer for 07 Days Only.</li>
+      </ul>
+      <div style="font-size:12px;margin:18px 0 10px;line-height:1.8;font-weight:bold;color:#334155;">
+        Hope the above Quote is Satisfactory and meets your requirements and await your confirmed LPO.<br>
+        Kindly contact the below personal for any clarifications as required
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-top:30px;margin-bottom:25px;">
+        <div style="font-size:12px;line-height:2.2;color:#334155;">
+          <div style="font-weight:bold;">Project Manager,</div>
+          <div style="font-weight:bold;font-size:13px;">Ahmad Latif</div>
+          <div>+971 58 84 90 784</div>
+        </div>
+        <div style="text-align:center; z-index: 10; position: relative;">
+          <svg viewBox="0 0 200 200" width="130" height="130" style="opacity: 0.95; transform: rotate(-10deg); filter: drop-shadow(0px 0px 1px rgba(29, 18, 95, 0.3));">
+            <circle cx="100" cy="100" r="95" fill="none" stroke="#1d125f" stroke-width="3" />
+            <circle cx="100" cy="100" r="90" fill="none" stroke="#1d125f" stroke-width="1" />
+            <circle cx="100" cy="100" r="62" fill="none" stroke="#1d125f" stroke-width="1" />
+            <circle cx="100" cy="100" r="57" fill="none" stroke="#1d125f" stroke-width="2.5" />
+            <path id="topPath" d="M 25,100 A 75,75 0 0,1 175,100" fill="none" stroke="none" />
+            <path id="bottomPath" d="M 175,100 A 75,75 0 0,1 25,100" fill="none" stroke="none" />
+            <text fill="#1d125f" font-family="Arial, Helvetica, sans-serif" font-weight="900" font-size="8.2" letter-spacing="0.3">
+              <textPath href="#topPath" startOffset="50%" text-anchor="middle">احمد الالمنيوم اند جلاس كونتراكتور ش.ذ.م.م - منطقة حرة</textPath>
+            </text>
+            <text fill="#1d125f" font-family="Arial, Helvetica, sans-serif" font-weight="900" font-size="7.5" letter-spacing="0.3">
+              <textPath href="#bottomPath" startOffset="50%" text-anchor="middle">AHMAD ALUMINIUM AND GLASS CONTRACTOR L.L.C-FZ</textPath>
+            </text>
+            <text x="20" y="104" fill="#1d125f" font-size="12" font-weight="bold">★</text>
+            <text x="169" y="104" fill="#1d125f" font-size="12" font-weight="bold">★</text>
+            <text x="100" y="108" fill="#1d125f" font-family="Arial Black, Impact, sans-serif" font-weight="900" font-size="13" text-anchor="middle" letter-spacing="0.5">DUBAI - U.A.E</text>
+          </svg>
+        </div>
+        <div style="text-align:center;">
+          <div style="font-size:11px;color:#64748b;margin-bottom:6px;">Signature:</div>
+          <img src="Signature-Ahmad.png" alt="Ahmad Latif Signature" style="height:45px; width:auto; border-bottom:1px solid #cbd5e1; display:inline-block; padding-bottom:4px; max-width: 150px; object-fit: contain;">
+        </div>
+      </div>
+      <!-- BANK DETAILS (MATCHING YOUR SCREENSHOT LAYOUT SPECIFICATIONS EXACTLY) -->
+      <div style="border-top:2px solid #991b1b;padding-top:15px;">
+        <h3 style="color:#991b1b;font-size:13px;font-weight:bold;text-align:center;margin-bottom:12px;text-transform:uppercase;letter-spacing:2px;">Company Bank Account Details</h3>
+        <div class="bank-grid-vertical">
+          <div class="bank-card">
+            <div>
+              <strong>1) Company Corporate Account — Mashreq Bank</strong>
+              <span style="font-size:11.5px;color:#1e293b;display:block;margin:2px 0;">Title: Ahmad Aluminium and Glass Contractor LLC FZ</span>
+              <small style="color:#64748b;font-size:10px;">Account No: 019 1021 34817 &nbsp;|&nbsp; Swift: BOMLAEAD</small>
+            </div>
+            <div class="iban-pill" onclick="copyToClipboard(this, 'AE360330000019102134817')">
+              <span>AE36 0330 0000 1910 2134 817</span>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+            </div>
+          </div>
+          <div class="bank-card">
+            <div>
+              <strong>2) Chief Executive Register — Emirates NBD</strong>
+              <span style="font-size:11.5px;color:#1e293b;display:block;margin:2px 0;">Title: Ahmad Latif</span>
+              <small style="color:#64748b;font-size:10px;">Account No: 10 1580 3625 901 &nbsp;|&nbsp; Swift: EBILAEAD</small>
+            </div>
+            <div class="iban-pill" onclick="copyToClipboard(this, 'AE280260001015803625901')">
+              <span>AE28 0260 0010 1580 3625 901</span>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+            </div>
+          </div>
+          <div class="bank-card">
+            <div>
+              <strong>3) Secondary Operational Line — Mashreq Bank</strong>
+              <span style="font-size:11.5px;color:#1e293b;display:block;margin:2px 0;">Title: Ahmad Latif</span>
+              <small style="color:#64748b;font-size:10px;">Account No: 019 1009 20602 &nbsp;|&nbsp; Swift: BOMLAEAD</small>
+            </div>
+            <div class="iban-pill" onclick="copyToClipboard(this, 'AE720330000019100920602')">
+              <span>AE72 0330 0000 1910 0920 602</span>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+  document.getElementById('quotationDoc').innerHTML = page1 + pageBreak + page2;
+}
+
+async function downloadPDF() {
+  const ref = document.getElementById('quotRef').value || 'AA-2026-215';
+  const element = document.getElementById('quotationDoc');
+  
+  if (!element || element.innerHTML.includes('Fill form & Generate')) {
+    alert("Please generate the quotation first.");
+    return;
+  }
+
+  triggerSilentCloudSave();
+
+  const dividers = element.querySelectorAll('.page-break-divider');
+  dividers.forEach(d => d.style.display = 'none');
+
+  const opt = {
+    margin:       0,
+    filename:     `${ref}.pdf`,
+    image:        { type: 'jpeg', quality: 0.98 },
+    html2canvas:  { scale: 2, useCORS: true, logging: false },
+    jsPDF:        { unit: 'pt', format: 'a4', orientation: 'portrait' },
+    pagebreak:    { mode: ['css', 'legacy'] }
+  };
+
+  try {
+    if (savedFolderHandle) {
+      const hasPermission = await verifyPermission(savedFolderHandle, true);
+      if (hasPermission) {
+        const blob = await html2pdf().set(opt).from(element).output('blob');
+        const fileHandle = await savedFolderHandle.getFileHandle(`${ref}.pdf`, { create: true });
+        const writable = await fileHandle.createWritable();
+        await writable.write(blob);
+        await writable.close();
+        
+        alert(`Successfully auto-saved to folder as: "${ref}.pdf"`);
+        incrementReferenceNumber();
+        return;
+      }
+    }
+  } catch (err) {
+    console.error("Auto-save folder writing failed, falling back to browser download:", err);
+  }
+
+  html2pdf().set(opt).from(element).save().then(() => {
+    incrementReferenceNumber();
+  });
+}
+
+function incrementReferenceNumber() {
+  const refVal = document.getElementById('quotRef').value;
+  const numPart = refVal.match(/\d+$/);
+  if (numPart) {
+    const usedNum = parseInt(numPart[0]);
+    localStorage.setItem('nextQuotNum', usedNum + 1);
+    document.getElementById('quotRef').value = "AA-" + currentYear + "-" + (usedNum + 1);
+  }
+}
+
+function applySmartEstimator() {
+  hasEstimatorBeenRun = true;
+  const cat = document.getElementById('workTypeSelector').value;
+  onWorkTypeChange(cat === 'Custom' ? 'Glass Room' : cat);
+  hasEstimatorBeenRun = false; 
+}
+
+function triggerSilentCloudSave() {
+  const syncEl = document.getElementById('syncStatus');
+  if (syncEl) syncEl.textContent = "SAVING...";
+  
+  const data = {
+    ref: document.getElementById('quotRef').value,
+    clientAddr: document.getElementById('clientAddr').value,
+    clientPhone: document.getElementById('clientPhone').value,
+    clientEmail: document.getElementById('clientEmail').value,
+    subject: document.getElementById('subject').value,
+    date: document.getElementById('quotDate').value,
+    items: getItems()
+  };
+  
+  fetch(DB_URL, { 
+    method: "POST", 
+    body: JSON.stringify(data),
+    mode: "no-cors",
+    headers: { "Content-Type": "text/plain;charset=utf-8" }
+  })
+  .then(() => {
+    if (syncEl) syncEl.textContent = "CONNECTED";
+    setTimeout(fetchRecentQuotes, 1000);
+  })
+  .catch(e => {
+    if (syncEl) syncEl.textContent = "SYNC ERROR";
+    console.error(e);
+  });
+}
+
+// UPGRADED TO WAIT FOR SIGNATURES AND LOGOS BEFORE COMPILING
+async function shareToWhatsApp() {
+  const ref = document.getElementById('quotRef').value || 'AA-2026-215';
+  const phone = document.getElementById('clientPhone').value.replace(/\D/g,'');
+  const msg = "Hello, please find your quotation Ref: " + ref;
+  
+  const element = document.getElementById('quotationDoc');
+  if (!element || element.innerHTML.includes('Fill form & Generate')) {
+    alert("Please generate the quotation first.");
+    return;
+  }
+
+  triggerSilentCloudSave();
+
+  const opt = {
+    margin:       0,
+    filename:     `${ref}.pdf`,
+    image:        { type: 'jpeg', quality: 0.98 },
+    html2canvas:  { scale: 2, useCORS: true, logging: false },
+    jsPDF:        { unit: 'pt', format: 'a4', orientation: 'portrait' },
+    pagebreak:    { mode: ['css', 'legacy'] }
+  };
+
+  try {
+    // Force browser to wait until signatures and company logo are fully loaded
+    const images = element.querySelectorAll('img');
+    const imageLoadPromises = Array.from(images).map(img => {
+      if (img.complete) return Promise.resolve();
+      return new Promise(resolve => {
+        img.onload = resolve;
+        img.onerror = resolve;
+      });
+    });
+    
+    await Promise.all(imageLoadPromises);
+
+    const pdfBlob = await html2pdf().set(opt).from(element).output('blob');
+    const file = new File([pdfBlob], `${ref}.pdf`, { type: 'application/pdf' });
+
+    if (
+      navigator.share && 
+      navigator.canShare && 
+      navigator.canShare({ files: [file] })
+    ) {
+      await navigator.share({
+        files: [file],
+        title: ref,
+        text: msg,
+      });
+      console.log('File shared natively successfully!');
+    } else {
+      alert("Direct file sharing is not supported on this browser/device. Downloading PDF and launching WhatsApp instead...");
+      html2pdf().set(opt).from(element).save();
+      window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
+    }
+  } catch (error) {
+    if (error.name !== 'AbortError') {
+      console.error('Error sharing file:', error);
+      alert(`Could not share: ${error.message || error}`);
+    }
+  }
+}
+
+function clearDraft() {
+  if (confirm("Reset current draft?")) {
+    document.getElementById('clientAddr').value = '';
+    document.getElementById('clientPhone').value = '';
+    document.getElementById('clientEmail').value = '';
+    document.getElementById('subject').value = '';
+    document.getElementById('discountAED').value = '0';
+    document.getElementById('sectionsContainer').innerHTML = '';
+    const sId = addSection("Section 1");
+    addItemToSection(sId);
+    generateQuotation();
+  }
+}
+
+window.onload = () => {
+  let currentSavedRef = localStorage.getItem('nextQuotNum') || 215;
+  const quotRefEl = document.getElementById('quotRef');
+  if (quotRefEl) {
+    quotRefEl.value = "AA-" + currentYear + "-" + currentSavedRef;
+  }
+
+  const dateEl = document.getElementById('quotDate');
+  if (dateEl) {
+    dateEl.valueAsDate = new Date();
+  }
+
+  loadSpreadsheetLibrary();
+  initFolderSelection(); 
+  fetchRecentQuotes();   
+  
+  document.getElementById('sectionsContainer').innerHTML = '';
+  const initialSecId = addSection("Section 1");
+  addItemToSection(initialSecId);
+};
+</script>
+
+<!-- Register the service worker for the Progressive Web App -->
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js')
+        .then((reg) => console.log('Service Worker Registered!', reg))
+        .catch((err) => console.log('Service Worker Registration Failed', err));
+    });
+  }
+</script>
+</body>
+</html>
