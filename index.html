@@ -199,7 +199,7 @@
         <label>Ref Number</label>
         <input type="text" id="quotRef" placeholder="AA-2026-215">
       </div>
-      <button onclick="clearDraft()" style="background: #fee2e2; color: #ef4444; border: none; padding: 9px 12px; border-radius: 6px; font-size: 11px; margin-top: 20px; font-weight: bold;">🧹 Reset</button>
+      <button onclick="startNewQuotation()" style="background: #fee2e2; color: #991b1b; border: none; padding: 9px 12px; border-radius: 6px; font-size: 11px; margin-top: 20px; font-weight: bold;">🆕 New Quotation</button>
     </div>
     
     <div class="form-group"><label>Date</label><input type="date" id="quotDate"></div>
@@ -269,9 +269,61 @@ let sectionCount = 0;
 let itemCount = 0;
 let cachedRecentQuotes = [];
 
-const IDB_DB_NAME = 'AhmadAluDirectoryDB';
-const IDB_STORE_NAME = 'handles';
-const IDB_KEY_NAME = 'savedFolder';
+// Track the next available reference number evaluated from live Google Sheet history
+let calculatedNextNum = localStorage.getItem('nextQuotNum') || 215;
+
+// Scans database history to compute the correct next reference number
+function determineNextReferenceNumber(quotes) {
+  if (!quotes || quotes.length === 0) return;
+  
+  let maxNum = 214; // Baseline default (215 - 1)
+  
+  quotes.forEach(q => {
+    if (q.ref) {
+      const numMatch = q.ref.match(/\d+$/);
+      if (numMatch) {
+        const num = parseInt(numMatch[0]);
+        if (num > maxNum) {
+          maxNum = num;
+        }
+      }
+    }
+  });
+
+  calculatedNextNum = maxNum + 1;
+  localStorage.setItem('nextQuotNum', calculatedNextNum);
+
+  // Set the current input field if working on a fresh draft
+  const quotRefEl = document.getElementById('quotRef');
+  if (quotRefEl) {
+    const currentVal = quotRefEl.value;
+    const currentNumMatch = currentVal.match(/\d+$/);
+    if (!currentVal || (currentNumMatch && parseInt(currentNumMatch[0]) <= calculatedNextNum)) {
+      quotRefEl.value = "AA-" + currentYear + "-" + calculatedNextNum;
+    }
+  }
+}
+
+// Cleans slate and configures the input for a new quotation draft
+function startNewQuotation() {
+  if (confirm("Start a new quotation? This will clear current unsaved inputs.")) {
+    document.getElementById('clientAddr').value = '';
+    document.getElementById('clientPhone').value = '';
+    document.getElementById('clientEmail').value = '';
+    document.getElementById('subject').value = '';
+    document.getElementById('discountAED').value = '0';
+    document.getElementById('sectionsContainer').innerHTML = '';
+    
+    const quotRefEl = document.getElementById('quotRef');
+    if (quotRefEl) {
+      quotRefEl.value = "AA-" + currentYear + "-" + calculatedNextNum;
+    }
+
+    const sId = addSection("Section 1");
+    addItemToSection(sId);
+    generateQuotation();
+  }
+}
 
 function getIDB() {
   return new Promise((resolve, reject) => {
@@ -281,6 +333,10 @@ function getIDB() {
     request.onerror = (e) => reject(e.target.error);
   });
 }
+
+const IDB_DB_NAME = 'AhmadAluDirectoryDB';
+const IDB_STORE_NAME = 'handles';
+const IDB_KEY_NAME = 'savedFolder';
 
 async function saveDirectoryHandle(handle) {
   const db = await getIDB();
@@ -391,6 +447,9 @@ function fetchRecentQuotes() {
   .then(quotes => {
     cachedRecentQuotes = quotes;
     renderRecentQuotes(quotes);
+    
+    // Evaluate history logs to set correct next sequential ref number
+    determineNextReferenceNumber(quotes);
   })
   .catch(err => {
     console.error(err);
@@ -602,71 +661,6 @@ function rebuildFlatItemLibrary() {
       datalist.appendChild(opt);
     });
   });
-}
-
-// --- UPGRADED SHARE FUNCTION (WAITS FOR IMAGES BEFORE EXPORTING) ---
-async function shareToWhatsApp() {
-  const ref = document.getElementById('quotRef').value || 'AA-2026-215';
-  const phone = document.getElementById('clientPhone').value.replace(/\D/g,'');
-  const msg = "Hello, please find your quotation Ref: " + ref;
-  
-  const element = document.getElementById('quotationDoc');
-  if (!element || element.innerHTML.includes('Fill form & Generate')) {
-    alert("Please generate the quotation first.");
-    return;
-  }
-
-  triggerSilentCloudSave();
-
-  const opt = {
-    margin:       0,
-    filename:     `${ref}.pdf`,
-    image:        { type: 'jpeg', quality: 0.98 },
-    html2canvas:  { scale: 2, useCORS: true, logging: false },
-    jsPDF:        { unit: 'pt', format: 'a4', orientation: 'portrait' },
-    pagebreak:    { mode: ['css', 'legacy'] }
-  };
-
-  try {
-    // CRITICAL CORRECTION: Force wait for images to load, ensuring Signatures and Logo never come out blank
-    const images = element.querySelectorAll('img');
-    const imageLoadPromises = Array.from(images).map(img => {
-      if (img.complete) return Promise.resolve();
-      return new Promise(resolve => {
-        img.onload = resolve;
-        img.onerror = resolve; // Continue anyway if an image is completely broken
-      });
-    });
-    
-    // Wait for all images in the document to finish loading
-    await Promise.all(imageLoadPromises);
-    
-    // Generate the PDF Blob
-    const pdfBlob = await html2pdf().set(opt).from(element).output('blob');
-    const file = new File([pdfBlob], `${ref}.pdf`, { type: 'application/pdf' });
-
-    if (
-      navigator.share && 
-      navigator.canShare && 
-      navigator.canShare({ files: [file] })
-    ) {
-      await navigator.share({
-        files: [file],
-        title: ref,
-        text: msg,
-      });
-      console.log('File shared natively successfully!');
-    } else {
-      alert("Direct file sharing is not supported on this browser/device. Downloading PDF and launching WhatsApp instead...");
-      html2pdf().set(opt).from(element).save();
-      window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
-    }
-  } catch (error) {
-    if (error.name !== 'AbortError') {
-      console.error('Error sharing file:', error);
-      alert(`Could not share: ${error.message || error}`);
-    }
-  }
 }
 
 function populateCategorySelector() {
@@ -1218,7 +1212,6 @@ function generateQuotation() {
         </div>
         <div>
           <div class="section-label">Document Info</div>
-          <!-- Ref / Quotation number highlighted in bold red -->
           <div><strong>Reference No:</strong> <span style="color: #991b1b; font-weight: bold;">${ref}</span></div>
           <div><strong>Date:</strong> ${date}</div>
           <div><strong>EMAIL:</strong> info@ahmadaluminium.ae</div>
@@ -1251,7 +1244,6 @@ function generateQuotation() {
     </div>
   </div>`;
 
-  // REMOVED THE "Page 2 Below" text and replaced with a clean divider line on the screen
   const pageBreak = `<div class="page-break-divider" style="height: 1px; border-bottom: 1px dashed #cbd5e1; margin: 24px 0;"></div>`;
 
   const page2 = `
@@ -1309,7 +1301,7 @@ function generateQuotation() {
           <img src="Signature-Ahmad.png" alt="Ahmad Latif Signature" style="height:45px; width:auto; border-bottom:1px solid #cbd5e1; display:inline-block; padding-bottom:4px; max-width: 150px; object-fit: contain;">
         </div>
       </div>
-      <!-- BANK DETAILS (MATCHING YOUR SCREENSHOT LAYOUT SPECIFICATIONS EXACTLY) -->
+      <!-- BANK DETAILS -->
       <div style="border-top:2px solid #991b1b;padding-top:15px;">
         <h3 style="color:#991b1b;font-size:13px;font-weight:bold;text-align:center;margin-bottom:12px;text-transform:uppercase;letter-spacing:2px;">Company Bank Account Details</h3>
         <div class="bank-grid-vertical">
@@ -1471,7 +1463,6 @@ async function shareToWhatsApp() {
   };
 
   try {
-    // Force browser to wait until signatures and company logo are fully loaded
     const images = element.querySelectorAll('img');
     const imageLoadPromises = Array.from(images).map(img => {
       if (img.complete) return Promise.resolve();
@@ -1510,20 +1501,6 @@ async function shareToWhatsApp() {
   }
 }
 
-function clearDraft() {
-  if (confirm("Reset current draft?")) {
-    document.getElementById('clientAddr').value = '';
-    document.getElementById('clientPhone').value = '';
-    document.getElementById('clientEmail').value = '';
-    document.getElementById('subject').value = '';
-    document.getElementById('discountAED').value = '0';
-    document.getElementById('sectionsContainer').innerHTML = '';
-    const sId = addSection("Section 1");
-    addItemToSection(sId);
-    generateQuotation();
-  }
-}
-
 window.onload = () => {
   let currentSavedRef = localStorage.getItem('nextQuotNum') || 215;
   const quotRefEl = document.getElementById('quotRef');
@@ -1534,6 +1511,14 @@ window.onload = () => {
   const dateEl = document.getElementById('quotDate');
   if (dateEl) {
     dateEl.valueAsDate = new Date();
+  }
+
+  // HIDE FOLDER SELECTION SETTINGS IF BROWSING ON MOBILE
+  if (!window.showDirectoryPicker) {
+    const folderHeader = document.querySelector('.folder-setup-header');
+    if (folderHeader) {
+      folderHeader.style.display = 'none';
+    }
   }
 
   loadSpreadsheetLibrary();
