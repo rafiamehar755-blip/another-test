@@ -314,6 +314,7 @@ function startNewQuotation() {
     document.getElementById('clientEmail').value = '';
     document.getElementById('subject').value = '';
     document.getElementById('discountAED').value = '0';
+    document.getElementById('vatToggle').value = 'no';
     document.getElementById('sectionsContainer').innerHTML = '';
     
     // Load the calculated next number
@@ -500,7 +501,25 @@ function renderRecentQuotes(quotes) {
     if (q.itemsJson) {
       try {
         const items = JSON.parse(q.itemsJson);
-        total = items.reduce((s, i) => s + (parseFloat(i.amount) || 0), 0);
+        let subtotal = items.reduce((s, i) => s + (parseFloat(i.amount) || 0), 0);
+        
+        // Retrieve discount & VAT from the metadata we embedded inside itemsJson
+        let discount = 0;
+        let isVat = false;
+        if (items.length > 0) {
+          const firstItem = items[0];
+          if (firstItem.discount !== undefined) {
+            discount = parseFloat(firstItem.discount) || 0;
+          }
+          if (firstItem.vat !== undefined) {
+            isVat = (firstItem.vat === 'yes');
+          }
+        }
+        
+        // Calculate dynamic grand total to display in sidebar list
+        let netTotal = Math.max(0, subtotal - discount);
+        let vat = isVat ? netTotal * 0.05 : 0;
+        total = netTotal + vat;
       } catch(e) {}
     }
     
@@ -554,6 +573,25 @@ function deserializeItems(itemsData) {
   sectionCount = 0;
   itemCount = 0;
   
+  // RESTORE DISCOUNT & VAT VALUES FROM METADATA
+  if (itemsData && itemsData.length > 0) {
+    const firstItem = itemsData[0];
+    if (firstItem.discount !== undefined) {
+      document.getElementById('discountAED').value = firstItem.discount;
+    } else {
+      document.getElementById('discountAED').value = '0';
+    }
+    
+    if (firstItem.vat !== undefined) {
+      document.getElementById('vatToggle').value = firstItem.vat;
+    } else {
+      document.getElementById('vatToggle').value = 'no';
+    }
+  } else {
+    document.getElementById('discountAED').value = '0';
+    document.getElementById('vatToggle').value = 'no';
+  }
+
   let lastSectionTitle = null;
   let currentSectionId = null;
 
@@ -658,6 +696,7 @@ function parseCSV(text) {
   lines.push(row); return lines;
 }
 
+// Loads Google Sheets Library
 function loadSpreadsheetLibrary() {
   fetch(SPREADSHEET_CSV_URL).then(res => res.text()).then(csvText => {
     parsedLibrary = processLibraryCSV(csvText);
@@ -968,7 +1007,10 @@ function getItems() {
         amount: calcEl ? parseFloat(calcEl.dataset.amount) || 0 : 0,
         priceType: pTypeEl ? pTypeEl.value : 'Rate',
         rate: rateEl ? rateEl.value : '0',
-        sizes: sizesArr
+        sizes: sizesArr,
+        // Save fallback: Store discount & VAT inside items JSON to survive Google Sheets load queries
+        discount: parseFloat(document.getElementById('discountAED').value) || 0,
+        vat: document.getElementById('vatToggle').value
       });
     });
   });
@@ -992,7 +1034,7 @@ function generateIsometricSVG(w, l, h) {
   const r_p3 = { x: dxW, y: dyW };
   const r_t0 = { x: r_p0.x, y: r_p0.y + dyH };
   const r_t1 = { x: r_p1.x, y: r_p1.y + dyH };
-  const r_t2 = { x: r_p2.x, y: r_p2.y + dyH };
+  const r_t2 = { x: r_p2.x, y: r_t2.y || (r_p2.y + dyH) };
   const r_t3 = { x: r_p3.x, y: r_p3.y + dyH };
   const allX = [r_p0.x, r_p1.x, r_p2.x, r_p3.x, r_t0.x, r_t1.x, r_t2.x, r_t3.x];
   const allY = [r_p0.y, r_p1.y, r_p2.y, r_p3.y, r_t0.y, r_t1.y, r_t2.y, r_t3.y];
@@ -1432,6 +1474,15 @@ function triggerSilentCloudSave() {
   const syncEl = document.getElementById('syncStatus');
   if (syncEl) syncEl.textContent = "SAVING...";
   
+  const itemsList = getItems();
+  const subtotal = itemsList.reduce((s, i) => s + (parseFloat(i.amount) || 0), 0);
+  const discountVal = parseFloat(document.getElementById('discountAED').value) || 0;
+  const isVat = document.getElementById('vatToggle').value === 'yes';
+  
+  const netTotal = Math.max(0, subtotal - discountVal);
+  const vat = isVat ? netTotal * 0.05 : 0;
+  const grandTotalVal = netTotal + vat;
+  
   const data = {
     ref: document.getElementById('quotRef').value,
     clientAddr: document.getElementById('clientAddr').value,
@@ -1439,7 +1490,14 @@ function triggerSilentCloudSave() {
     clientEmail: document.getElementById('clientEmail').value,
     subject: document.getElementById('subject').value,
     date: document.getElementById('quotDate').value,
-    items: getItems()
+    items: itemsList,
+    discount: discountVal,
+    vat: document.getElementById('vatToggle').value,
+    // Pass standard naming variables so your Google Sheet automatically receives the correct final grand total
+    total: grandTotalVal,
+    amount: grandTotalVal,
+    grandTotal: grandTotalVal,
+    netTotal: grandTotalVal
   };
   
   fetch(DB_URL, { 
@@ -1528,6 +1586,7 @@ function clearDraft() {
     document.getElementById('clientEmail').value = '';
     document.getElementById('subject').value = '';
     document.getElementById('discountAED').value = '0';
+    document.getElementById('vatToggle').value = 'no';
     document.getElementById('sectionsContainer').innerHTML = '';
     const sId = addSection("Section 1");
     addItemToSection(sId);
