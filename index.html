@@ -278,7 +278,7 @@ let calculatedNextNum = 215;
 try {
   calculatedNextNum = parseInt(localStorage.getItem('nextQuotNum')) || 215;
 } catch (e) {
-  console.warn("localStorage block:", e);
+  console.warn("Storage reading blocked:", e);
 }
 
 // Scans database history to compute the correct next reference number safely
@@ -302,8 +302,8 @@ function determineNextReferenceNumber(quotes) {
   calculatedNextNum = maxNum + 1;
   try {
     localStorage.setItem('nextQuotNum', calculatedNextNum);
-  } catch(e) { 
-    console.warn(e); 
+  } catch(e) {
+    console.warn("Storage writing blocked:", e);
   }
 
   // Set the current input field if working on a fresh draft
@@ -1505,6 +1505,11 @@ async function shareToWhatsApp() {
     }
   }
 }
+
+// Your original constants declared cleanly at the top of their context
+const IDB_DB_NAME = 'AhmadAluDirectoryDB';
+const IDB_STORE_NAME = 'handles';
+const IDB_KEY_NAME = 'savedFolder';
 
 // Safely stores the last calculated next reference number in local storage memory
 let calculatedNextNum = 215;
