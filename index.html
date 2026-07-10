@@ -269,8 +269,17 @@ let sectionCount = 0;
 let itemCount = 0;
 let cachedRecentQuotes = [];
 
-// Track the next available reference number evaluated from live Google Sheet history
-let calculatedNextNum = localStorage.getItem('nextQuotNum') || 215;
+const IDB_DB_NAME = 'AhmadAluDirectoryDB';
+const IDB_STORE_NAME = 'handles';
+const IDB_KEY_NAME = 'savedFolder';
+
+// Safely load the next available sequence number with a try/catch block
+let calculatedNextNum = 215;
+try {
+  calculatedNextNum = parseInt(localStorage.getItem('nextQuotNum')) || 215;
+} catch (e) {
+  console.warn("localStorage block:", e);
+}
 
 // Scans database history to compute the correct next reference number safely
 function determineNextReferenceNumber(quotes) {
@@ -280,7 +289,7 @@ function determineNextReferenceNumber(quotes) {
   
   quotes.forEach(q => {
     if (q.ref) {
-      const numMatch = q.ref.match(/\d+$/);
+      const numMatch = String(q.ref).match(/\d+$/);
       if (numMatch) {
         const num = parseInt(numMatch[0]);
         if (num > maxNum) {
@@ -291,7 +300,11 @@ function determineNextReferenceNumber(quotes) {
   });
 
   calculatedNextNum = maxNum + 1;
-  localStorage.setItem('nextQuotNum', calculatedNextNum);
+  try {
+    localStorage.setItem('nextQuotNum', calculatedNextNum);
+  } catch(e) { 
+    console.warn(e); 
+  }
 
   // Set the current input field if working on a fresh draft
   const quotRefEl = document.getElementById('quotRef');
@@ -325,10 +338,6 @@ function getIDB() {
     request.onerror = (e) => reject(e.target.error);
   });
 }
-
-const IDB_DB_NAME = 'AhmadAluDirectoryDB';
-const IDB_STORE_NAME = 'handles';
-const IDB_KEY_NAME = 'savedFolder';
 
 async function saveDirectoryHandle(handle) {
   const db = await getIDB();
@@ -1389,7 +1398,11 @@ function incrementReferenceNumber() {
   const numPart = refVal.match(/\d+$/);
   if (numPart) {
     const usedNum = parseInt(numPart[0]);
-    localStorage.setItem('nextQuotNum', usedNum + 1);
+    try {
+      localStorage.setItem('nextQuotNum', usedNum + 1);
+    } catch(e) {
+      console.warn("Storage writing blocked:", e);
+    }
     document.getElementById('quotRef').value = "AA-" + currentYear + "-" + (usedNum + 1);
   }
 }
@@ -1494,9 +1507,14 @@ async function shareToWhatsApp() {
 }
 
 // Safely stores the last calculated next reference number in local storage memory
-let calculatedNextNum = localStorage.getItem('nextQuotNum') || 215;
+let calculatedNextNum = 215;
+try {
+  calculatedNextNum = parseInt(localStorage.getItem('nextQuotNum')) || 215;
+} catch (e) {
+  console.warn("Storage reading blocked:", e);
+}
 
-// Scans database history to compute the correct next reference number cleanly
+// Scans database history to compute the correct next reference number safely
 function determineNextReferenceNumber(quotes) {
   if (!quotes || !Array.isArray(quotes) || quotes.length === 0) return;
   
@@ -1504,7 +1522,7 @@ function determineNextReferenceNumber(quotes) {
   
   quotes.forEach(q => {
     if (q.ref) {
-      const numMatch = q.ref.match(/\d+$/);
+      const numMatch = String(q.ref).match(/\d+$/);
       if (numMatch) {
         const num = parseInt(numMatch[0]);
         if (num > maxNum) {
@@ -1515,7 +1533,11 @@ function determineNextReferenceNumber(quotes) {
   });
 
   calculatedNextNum = maxNum + 1;
-  localStorage.setItem('nextQuotNum', calculatedNextNum);
+  try {
+    localStorage.setItem('nextQuotNum', calculatedNextNum);
+  } catch(e) {
+    console.warn("Storage writing blocked:", e);
+  }
 
   // Set the current input field if working on a fresh draft
   const quotRefEl = document.getElementById('quotRef');
@@ -1558,7 +1580,12 @@ function clearDraft() {
 
 // Your exact original window.onload function untouched
 window.onload = () => {
-  let currentSavedRef = localStorage.getItem('nextQuotNum') || 215;
+  let currentSavedRef = 215;
+  try {
+    currentSavedRef = parseInt(localStorage.getItem('nextQuotNum')) || 215;
+  } catch (e) {
+    console.warn("Storage reading blocked:", e);
+  }
   const quotRefEl = document.getElementById('quotRef');
   if (quotRefEl) {
     quotRefEl.value = "AA-" + currentYear + "-" + currentSavedRef;
