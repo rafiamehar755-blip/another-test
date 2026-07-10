@@ -793,11 +793,18 @@ function onWorkTypeChange(val) {
   if (val === 'Custom') return;
   document.getElementById('subject').value = "Supply & Installation of " + val;
   
-  const sec1Items = document.getElementById('sec_items_1');
-  if (sec1Items) {
-    sec1Items.innerHTML = '';
+  // Find the first section block in the workspace dynamically rather than hardcoding ID #1
+  const sections = document.querySelectorAll('.section-block');
+  let targetSectionId = null;
+  
+  if (sections.length > 0) {
+    targetSectionId = parseInt(sections[0].id.replace('section_', ''), 10);
+    const secItems = document.getElementById('sec_items_' + targetSectionId);
+    if (secItems) {
+      secItems.innerHTML = '';
+    }
   } else {
-    addSection("Section 1");
+    targetSectionId = addSection("Section 1");
   }
 
   const globalW = parseFloat(document.getElementById('globalWidth').value) || 0;
@@ -805,13 +812,13 @@ function onWorkTypeChange(val) {
   const globalH = parseFloat(document.getElementById('globalHeight').value) || 0;
 
   if (!parsedLibrary || !parsedLibrary[val]) {
-    addItemToSection(1);
+    addItemToSection(targetSectionId);
     return;
   }
 
   parsedLibrary[val].forEach(item => {
     const isFixed = !item.formula;
-    addItemToSection(1, item.name || '', item.desc || '', item.rate || 0, isFixed);
+    addItemToSection(targetSectionId, item.name || '', item.desc || '', item.rate || 0, isFixed);
     const currentId = itemCount;
     
     if (hasEstimatorBeenRun && item.formula) {
@@ -1466,7 +1473,14 @@ function incrementReferenceNumber() {
 function applySmartEstimator() {
   hasEstimatorBeenRun = true;
   const cat = document.getElementById('workTypeSelector').value;
-  onWorkTypeChange(cat === 'Custom' ? 'Glass Room' : cat);
+  
+  // Dynamic fallback: If "Glass Room" category doesn't exist, use the first category in the library
+  let fallbackCat = 'Glass Room';
+  if (parsedLibrary && !parsedLibrary['Glass Room'] && Object.keys(parsedLibrary).length > 0) {
+    fallbackCat = Object.keys(parsedLibrary)[0];
+  }
+  
+  onWorkTypeChange(cat === 'Custom' ? fallbackCat : cat);
   hasEstimatorBeenRun = false; 
 }
 
