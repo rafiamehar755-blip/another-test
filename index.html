@@ -442,7 +442,10 @@ function fetchRecentQuotes() {
   if (!listEl) return;
   listEl.innerHTML = '<div style="text-align: center; color: #94a3b8; padding: 10px;">Loading History...</div>';
   
-  fetch(DB_URL)
+  // Append a unique timestamp to prevent the browser from serving cached stale data
+  const cacheBusterUrl = DB_URL + (DB_URL.includes('?') ? '&' : '?') + 't=' + Date.now();
+  
+  fetch(cacheBusterUrl)
   .then(res => {
     if (!res.ok) throw new Error("HTTP error " + res.status);
     return res.json();
@@ -471,8 +474,19 @@ function renderRecentQuotes(quotes) {
     listEl.innerHTML = '<div style="text-align: center; color: #64748b; padding: 10px;">No quotations found</div>';
     return;
   }
+  
+  // Helper to extract the ending numeric part of your reference (e.g. 211 from "AA-2026-211")
+  function getNumericRef(refStr) {
+    if (!refStr) return 0;
+    const match = refStr.match(/\d+$/);
+    return match ? parseInt(match[0], 10) : 0;
+  }
+
+  // Sort quotations dynamically so the highest/latest reference number is always on top
+  const sortedQuotes = [...quotes].sort((a, b) => getNumericRef(b.ref) - getNumericRef(a.ref));
+
   listEl.innerHTML = '';
-  quotes.forEach(q => {
+  sortedQuotes.forEach(q => {
     const div = document.createElement('div');
     div.style.padding = '8px';
     div.style.borderBottom = '1px solid #e2e8f0';
@@ -1306,7 +1320,7 @@ function generateQuotation() {
           <img src="Signature-Ahmad.png" alt="Ahmad Latif Signature" style="height:45px; width:auto; border-bottom:1px solid #cbd5e1; display:inline-block; padding-bottom:4px; max-width: 150px; object-fit: contain;">
         </div>
       </div>
-      <!-- BANK DETAILS -->
+      <!-- BANK DETAILS (MATCHING YOUR SCREENSHOT LAYOUT SPECIFICATIONS EXACTLY) -->
       <div style="border-top:2px solid #991b1b;padding-top:15px;">
         <h3 style="color:#991b1b;font-size:13px;font-weight:bold;text-align:center;margin-bottom:12px;text-transform:uppercase;letter-spacing:2px;">Company Bank Account Details</h3>
         <div class="bank-grid-vertical">
@@ -1436,7 +1450,7 @@ function triggerSilentCloudSave() {
   })
   .then(() => {
     if (syncEl) syncEl.textContent = "CONNECTED";
-    setTimeout(fetchRecentQuotes, 1000);
+    setTimeout(fetchRecentQuotes, 2500);
   })
   .catch(e => {
     if (syncEl) syncEl.textContent = "SYNC ERROR";
@@ -1504,6 +1518,20 @@ async function shareToWhatsApp() {
       console.error('Error sharing file:', error);
       alert(`Could not share: ${error.message || error}`);
     }
+  }
+}
+
+function clearDraft() {
+  if (confirm("Reset current draft?")) {
+    document.getElementById('clientAddr').value = '';
+    document.getElementById('clientPhone').value = '';
+    document.getElementById('clientEmail').value = '';
+    document.getElementById('subject').value = '';
+    document.getElementById('discountAED').value = '0';
+    document.getElementById('sectionsContainer').innerHTML = '';
+    const sId = addSection("Section 1");
+    addItemToSection(sId);
+    generateQuotation();
   }
 }
 
