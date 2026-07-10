@@ -7,7 +7,7 @@
 <!-- html2pdf.js CDN library for programmatic high-fidelity PDF exports -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <!-- Link the manifest and set the brand theme color -->
-<link rel="manifest" href="manifest.json">
+<link class="manifest" rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#991b1b">
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
@@ -1041,7 +1041,7 @@ function generateIsometricSVG(w, l, h) {
   const r_p3 = { x: dxW, y: dyW };
   const r_t0 = { x: r_p0.x, y: r_p0.y + dyH };
   const r_t1 = { x: r_p1.x, y: r_p1.y + dyH };
-  const r_t2 = { x: r_p2.x, y: r_t2.y || (r_p2.y + dyH) };
+  const r_t2 = { x: r_p2.x, y: r_p2.y + dyH };
   const r_t3 = { x: r_p3.x, y: r_p3.y + dyH };
   const allX = [r_p0.x, r_p1.x, r_p2.x, r_p3.x, r_t0.x, r_t1.x, r_t2.x, r_t3.x];
   const allY = [r_p0.y, r_p1.y, r_p2.y, r_p3.y, r_t0.y, r_t1.y, r_t2.y, r_t3.y];
@@ -1555,7 +1555,7 @@ async function shareToWhatsApp() {
 
   try {
     // Force browser to wait until signatures and company logo are fully loaded
-    const images = element.querySelectorAll('img');
+    const images = element.querySelectorAllimg ? element.querySelectorAll('img') : [];
     const imageLoadPromises = Array.from(images).map(img => {
       if (img.complete) return Promise.resolve();
       return new Promise(resolve => {
