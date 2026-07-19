@@ -562,7 +562,7 @@ function addItemToSection(sId, pName = '', pDesc = '', pRate = '', pFixed = fals
       <div class="full" style="margin-top: 5px;"><input type="checkbox" id="toggle_size_${id}" onchange="toggleSizeDisplay(${id})"> <label style="display:inline; margin-left: 5px;">Add Custom Sizes</label></div>
       
       <div class="full sizes-container" id="sizes_container_${id}">
-        <div class="sizes-title">📐 Custom Sizes (Up to 4 unique measurements)</div>
+        <div class="sizes-title">📐 Custom Sizes (Up to 6 unique measurements)</div>
         <div class="size-row">
           <span>#1</span><input type="number" id="w1_${id}" placeholder="W (cm)" oninput="calcArea(${id})">
           <span>×</span><input type="number" id="h1_${id}" placeholder="H (cm)" oninput="calcArea(${id})">
@@ -582,6 +582,16 @@ function addItemToSection(sId, pName = '', pDesc = '', pRate = '', pFixed = fals
           <span>#4</span><input type="number" id="w4_${id}" placeholder="W (cm)" oninput="calcArea(${id})">
           <span>×</span><input type="number" id="h4_${id}" placeholder="H (cm)" oninput="calcArea(${id})">
           <span>Qty</span><input type="number" id="qty4_${id}" oninput="calcArea(${id})">
+        </div>
+        <div class="size-row">
+          <span>#5</span><input type="number" id="w5_${id}" placeholder="W (cm)" oninput="calcArea(${id})">
+          <span>×</span><input type="number" id="h5_${id}" placeholder="H (cm)" oninput="calcArea(${id})">
+          <span>Qty</span><input type="number" id="qty5_${id}" oninput="calcArea(${id})">
+        </div>
+        <div class="size-row">
+          <span>#6</span><input type="number" id="w6_${id}" placeholder="W (cm)" oninput="calcArea(${id})">
+          <span>×</span><input type="number" id="h6_${id}" placeholder="H (cm)" oninput="calcArea(${id})">
+          <span>Qty</span><input type="number" id="qty6_${id}" oninput="calcArea(${id})">
         </div>
       </div>
       

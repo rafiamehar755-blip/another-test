@@ -32,7 +32,7 @@ function calcArea(id) {
   let totalArea = 0; let totalQty = 0; let sizeTxt = [];
 
   if (sizeOn) {
-    for (let s = 1; s <= 4; s++) {
+    for (let s = 1; s <= 6; s++) {
       const wEl = document.getElementById(`w${s}_${id}`);
       const hEl = document.getElementById(`h${s}_${id}`);
       const qtyEl = document.getElementById(`qty${s}_${id}`);
@@ -85,7 +85,7 @@ function getItems() {
       const id = row.id.replace('item_', '');
       const calcEl = document.getElementById('calc_' + id);
       let sizesArr = [];
-      for (let s = 1; s <= 4; s++) {
+      for (let s = 1; s <= 6; s++) {
         const wEl = document.getElementById(`w${s}_${id}`);
         const hEl = document.getElementById(`h${s}_${id}`);
         const qtyEl = document.getElementById(`qty${s}_${id}`);
